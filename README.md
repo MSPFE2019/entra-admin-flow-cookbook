@@ -145,7 +145,7 @@ Permissions below are examples and should be checked against each endpoint's cur
 | `AccessReview.Read.All` | Read access review configuration |
 | `DelegatedPermissionGrant.Read.All` | Read delegated OAuth permission grants |
 
-The screenshot referenced in the catalog showed `User.Read.All`, `Application.Read.All`, `Directory.Read.All`, and `Organization.Read.All` as granted Application permissions. That is not a live status check. For example, `LicenseAssignment.Read.All` is the narrower permission to check for the subscribed SKU endpoint instead of adding broader access.
+Highlighted permissions indicate those present in the example app registration. This is only a visual reference, not a live tenant status check. For example, `LicenseAssignment.Read.All` is the narrower permission to check for the subscribed SKU endpoint instead of adding broader access.
 
 ## References
 
