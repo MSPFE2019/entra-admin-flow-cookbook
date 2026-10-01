@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Interactive cookbook of 30 Microsoft Entra admin reporting flows for Power Automate and Microsoft Graph.">
+  <meta name="description" content="Accessible, interactive cookbook of Microsoft Entra admin reporting flows for Power Automate and Microsoft Graph.">
   <title>Entra Admin Flow Cookbook</title>
   <script>
     (() => {
@@ -66,6 +66,31 @@
       --cp-sheen: rgba(255, 255, 255, 0.04);
       --cp-highlight: rgba(253, 142, 161, 0.12);
     }
+    html { scroll-behavior: smooth; font-size: calc(100% * var(--reader-scale, 1)); }
+    html[data-contrast="high"] {
+      --cp-bg: #000000;
+      --cp-bg-elevated: #000000;
+      --cp-surface: #000000;
+      --cp-surface-soft: #111111;
+      --cp-border: #ffffff;
+      --cp-border-strong: #ffffff;
+      --cp-text: #ffffff;
+      --cp-text-muted: #ffffff;
+      --cp-text-soft: #ffffff;
+      --cp-accent: #ffff00;
+      --cp-accent-hover: #ffff00;
+      --cp-accent-soft: #222200;
+      --cp-accent-fg: #000000;
+      --cp-success: #00ff00;
+      --cp-danger: #ff6060;
+      --cp-warning: #ffff00;
+      --cp-link: #00ffff;
+      --cp-overlay: rgba(0, 0, 0, 0.96);
+      --cp-panel: #000000;
+      --cp-panel-strong: #000000;
+      --cp-sheen: #000000;
+      --cp-highlight: #ffff00;
+    }
     * { box-sizing: border-box; }
     body {
       margin: 0;
@@ -73,47 +98,55 @@
       color: var(--cp-text);
       font-family: "Segoe UI", Aptos, Calibri, -apple-system, BlinkMacSystemFont, sans-serif;
       line-height: 1.5;
+      font-size: 1rem;
     }
     a { color: var(--cp-link); }
     button, input, select { font: inherit; }
     button, select, input { color: var(--cp-text); }
     .wrap { width: min(1180px, calc(100% - 36px)); margin: auto; }
+    .visually-hidden { position:absolute !important; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+    .skip-link { position:fixed; z-index:10; top:8px; left:8px; transform:translateY(-160%); background:var(--cp-surface); color:var(--cp-text); border:2px solid var(--cp-accent); border-radius:.625rem; padding:10px 14px; }
+    .skip-link:focus { transform:translateY(0); }
     .topbar { border-bottom: 1px solid var(--cp-border); background: var(--cp-bg-elevated); }
-    .topbar-inner { display:flex; align-items:center; justify-content:space-between; min-height:60px; gap:16px; }
+    .topbar-inner { display:flex; align-items:center; justify-content:space-between; min-height:60px; gap:16px; flex-wrap:wrap; padding-top:8px; padding-bottom:8px; }
     .brand { font-weight:700; letter-spacing:.01em; }
-    .top-links { display:flex; gap:18px; font-size:.92rem; }
+    .top-links { display:flex; gap:18px; font-size:1rem; flex-wrap:wrap; }
     .top-links a { color:var(--cp-text-muted); text-decoration:none; }
     .top-links a:hover { color:var(--cp-accent); }
+    :focus-visible { outline:3px solid var(--cp-accent) !important; outline-offset:3px; }
+    button, a, input, select { min-height:44px; }
+    .reader-controls { display:flex; align-items:center; gap:7px; flex-wrap:wrap; }
+    .reader-controls button { border:1px solid var(--cp-border-strong); border-radius:.625rem; background:var(--cp-surface); padding:6px 10px; cursor:pointer; }
     header.hero { padding:42px 0 24px; }
-    .eyebrow { color:var(--cp-accent); text-transform:uppercase; letter-spacing:.12em; font-weight:700; font-size:.77rem; }
+    .eyebrow { color:var(--cp-accent); text-transform:uppercase; letter-spacing:.08em; font-weight:700; font-size:.9rem; }
     h1 { font-size:clamp(2rem,5vw,3.3rem); letter-spacing:-.04em; line-height:1.08; margin:10px 0 12px; }
     .hero p { color:var(--cp-text-muted); font-size:1.08rem; max-width:780px; margin:0; }
     .hero-row { display:flex; justify-content:space-between; align-items:end; gap:28px; }
     .stats { display:flex; gap:10px; flex-wrap:wrap; }
     .stat { background:var(--cp-surface); border:1px solid var(--cp-border); border-radius:.625rem; padding:9px 13px; min-width:112px; }
     .stat strong { display:block; font-size:1.2rem; }
-    .stat span { color:var(--cp-text-muted); font-size:.8rem; }
+    .stat span { color:var(--cp-text-muted); font-size:.9rem; }
     .notice { margin:0 0 22px; padding:13px 16px; border:1px solid var(--cp-border); border-left:4px solid var(--cp-warning); border-radius:.625rem; background:var(--cp-surface); color:var(--cp-text-muted); }
     .notice strong { color:var(--cp-text); }
-    .toolbar { position:sticky; top:0; z-index:3; padding:13px 0; background:var(--cp-overlay); border-top:1px solid var(--cp-border); border-bottom:1px solid var(--cp-border); backdrop-filter:blur(8px); }
+    .toolbar { position:relative; padding:13px 0; background:var(--cp-bg-elevated); border-top:1px solid var(--cp-border); border-bottom:1px solid var(--cp-border); }
     .controls { display:grid; grid-template-columns:minmax(220px,1fr) auto auto; gap:10px; align-items:center; }
     .search, select { height:42px; border:1px solid var(--cp-border-strong); border-radius:.625rem; padding:0 12px; background:var(--cp-surface); }
     .search:focus, select:focus, button:focus-visible, a:focus-visible { outline:2px solid var(--cp-accent); outline-offset:2px; }
     .filters { display:flex; gap:8px; flex-wrap:wrap; padding-top:11px; }
-    .filter { border:1px solid var(--cp-border); border-radius:999px; background:var(--cp-surface); padding:6px 12px; cursor:pointer; font-size:.86rem; }
+    .filter { border:1px solid var(--cp-border); border-radius:999px; background:var(--cp-surface); padding:8px 14px; cursor:pointer; font-size:1rem; }
     .filter[aria-pressed="true"] { background:var(--cp-accent); color:var(--cp-accent-fg); border-color:var(--cp-accent); }
-    .countline { display:flex; justify-content:space-between; align-items:center; padding:18px 0 10px; color:var(--cp-text-muted); font-size:.91rem; }
+    .countline { display:flex; justify-content:space-between; align-items:center; padding:18px 0 10px; color:var(--cp-text-muted); font-size:1rem; gap:12px; flex-wrap:wrap; }
     .grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; padding-bottom:34px; }
     .card { border:1px solid var(--cp-border); border-radius:16px; background:var(--cp-surface); padding:17px; display:flex; flex-direction:column; min-height:240px; box-shadow:0 0 2px var(--cp-border), 0 1px 2px var(--cp-border); }
     .card-top { display:flex; justify-content:space-between; gap:10px; align-items:start; }
-    .number { color:var(--cp-accent); font-weight:700; font-size:.78rem; letter-spacing:.08em; }
-    .category { font-size:.75rem; border:1px solid var(--cp-border); padding:3px 8px; border-radius:999px; color:var(--cp-text-muted); white-space:nowrap; }
-    .card h2 { font-size:1.12rem; line-height:1.28; margin:10px 0 7px; }
-    .card p { color:var(--cp-text-muted); font-size:.91rem; margin:0 0 14px; }
+    .number { color:var(--cp-accent); font-weight:700; font-size:.95rem; letter-spacing:.06em; }
+    .category { font-size:.9rem; border:1px solid var(--cp-border); padding:4px 9px; border-radius:999px; color:var(--cp-text-muted); white-space:normal; }
+    .card h2 { font-size:1.25rem; line-height:1.4; margin:10px 0 7px; }
+    .card p { color:var(--cp-text-muted); font-size:1rem; margin:0 0 14px; }
     .perms { display:flex; flex-wrap:wrap; gap:6px; margin-top:auto; }
-    .perm { font-family:Consolas,"Courier New",Courier,monospace; font-size:.72rem; border-radius:.625rem; padding:4px 7px; background:var(--cp-surface-soft); border:1px solid var(--cp-border); }
+    .perm { font-family:Consolas,"Courier New",Courier,monospace; font-size:.9rem; border-radius:.625rem; padding:5px 8px; background:var(--cp-surface-soft); border:1px solid var(--cp-border); overflow-wrap:anywhere; }
     .perm.existing::after { content:" ✓"; color:var(--cp-success); font-family:inherit; }
-    .open { align-self:flex-start; margin-top:13px; border:0; background:transparent; color:var(--cp-accent); padding:0; font-weight:700; cursor:pointer; }
+    .open { align-self:flex-start; margin-top:13px; border:0; background:transparent; color:var(--cp-accent); padding:6px 0; font-weight:700; cursor:pointer; }
     .empty { grid-column:1/-1; padding:35px; text-align:center; color:var(--cp-text-muted); border:1px dashed var(--cp-border-strong); border-radius:16px; }
     .guide { border-top:1px solid var(--cp-border); padding:28px 0 38px; }
     .guide h2 { font-size:1.55rem; margin:0 0 8px; }
@@ -143,12 +176,27 @@
     .action.primary { background:var(--cp-accent); color:var(--cp-accent-fg); border-color:var(--cp-accent); }
     .toast { position:fixed; bottom:18px; left:50%; transform:translateX(-50%); background:var(--cp-text); color:var(--cp-bg); padding:9px 14px; border-radius:.625rem; display:none; z-index:8; }
     .toast.show { display:block; }
+    .modal-backdrop.open { overscroll-behavior:contain; }
+    .modal { max-height:90vh; overflow:auto; }
+    .modal-section p { color:var(--cp-text-muted); }
+    .modal h2 { font-size:1.8rem; line-height:1.35; }
+    .steps li, .guide li, .guide p { line-height:1.7; }
+    html[data-motion="reduce"], html[data-motion="reduce"] * { scroll-behavior:auto !important; transition-duration:.01ms !important; animation-duration:.01ms !important; }
+    @media (forced-colors: active) {
+      .card, .stat, .guide-card, .modal, .filter, .action, .search, select { border:1px solid CanvasText; }
+      .filter[aria-pressed="true"], .action.primary { border:2px solid Highlight; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior:auto; }
+      *, *::before, *::after { scroll-behavior:auto !important; transition-duration:.01ms !important; animation-duration:.01ms !important; }
+    }
     @media (max-width:900px) { .grid { grid-template-columns:repeat(2,minmax(0,1fr)); } .hero-row { align-items:start; flex-direction:column; } }
     @media (max-width:620px) { .wrap { width:min(100% - 24px,1180px); } .controls { grid-template-columns:1fr 1fr; } .search { grid-column:1/-1; } .grid,.guide-grid { grid-template-columns:1fr; } .top-links { gap:10px; font-size:.82rem; } .card { min-height:unset; } .modal { padding:16px; } }
   </style>
 </head>
 <body>
-  <div class="topbar">
+  <a class="skip-link" href="#main-content">Skip to main content</a>
+  <div id="topbar" class="topbar">
     <div class="wrap topbar-inner">
       <div class="brand">Entra Admin Flow Cookbook</div>
       <nav class="top-links" aria-label="Main navigation">
@@ -157,27 +205,33 @@
         <a href="README.md">Repository guide</a>
         <a href="https://github.com/MSPFE2019/entra-admin-flow-cookbook">GitHub</a>
       </nav>
+      <div class="reader-controls" role="group" aria-label="Display accessibility settings">
+        <button id="text-smaller" type="button" aria-label="Decrease text size">A−</button>
+        <button id="text-larger" type="button" aria-label="Increase text size">A+</button>
+        <button id="contrast-toggle" type="button" aria-pressed="false">High contrast: off</button>
+      </div>
     </div>
   </div>
   <header class="wrap hero">
     <div class="hero-row">
       <div>
         <div class="eyebrow">Power Automate · Microsoft Graph · Read-only first</div>
-        <h1>30 admin flows.<br>One practical catalog.</h1>
+        <h1>60 admin flows.<br>One practical catalog.</h1>
         <p>Find a tenant-admin reporting idea, see the Graph request and application permissions, then follow the recipe to build it in Power Automate.</p>
       </div>
       <div class="stats" aria-label="Catalog summary">
-        <div class="stat"><strong>30</strong><span>flow recipes</span></div>
-        <div class="stat"><strong>13</strong><span>permission families</span></div>
+        <div class="stat"><strong id="flow-total">60</strong><span>flow recipes</span></div>
+        <div class="stat"><strong>20+</strong><span>permission families</span></div>
         <div class="stat"><strong>2</strong><span>cloud hosts</span></div>
       </div>
     </div>
   </header>
-  <main>
+  <main id="main-content">
     <div class="wrap">
-      <div class="notice"><strong>Permission note:</strong> a check mark means the permission appeared as an application permission in the example registration screenshot. It is not a live tenant check. The catalog is read-only by design; do not grant every permission at once.</div>
+      <div class="notice"><strong>Permission note:</strong> “shown in screenshot” means the permission appeared as an application permission in the example registration. “Add/verify” means it was not shown there. These are not live tenant checks. The catalog is read-only by design; do not grant every permission at once.</div>
     </div>
-    <section id="catalog" aria-label="Flow catalog">
+    <section id="catalog" aria-labelledby="catalog-title">
+      <h2 id="catalog-title" class="visually-hidden">Flow catalog</h2>
       <div class="toolbar">
         <div class="wrap">
           <div class="controls">
@@ -191,18 +245,18 @@
               <option value="title">Sort: title A–Z</option>
             </select>
           </div>
-          <div id="filters" class="filters" aria-label="Filter by category"></div>
+          <div id="filters" class="filters" role="group" aria-label="Filter recipes by category"></div>
         </div>
       </div>
       <div class="wrap">
-        <div class="countline"><span id="result-count" aria-live="polite"></span><span>Open a card for build steps</span></div>
+        <div class="countline"><span id="result-count" role="status" aria-live="polite" aria-atomic="true"></span><span>Open a recipe for its build steps.</span></div>
         <div id="grid" class="grid"></div>
       </div>
     </section>
-    <section id="setup" class="guide">
+    <section id="setup" class="guide" aria-labelledby="setup-title">
       <div class="wrap">
         <div class="eyebrow">Shared foundation</div>
-        <h2>Set up the app and scheduled flow</h2>
+        <h2 id="setup-title">Set up the app and scheduled flow</h2>
         <p>Use the exact least-privileged Graph <strong>Application</strong> permission for the recipe endpoint, with admin consent. The cloud choice above changes the displayed Graph host and OAuth authority.</p>
         <div class="guide-grid">
           <article class="guide-card">
@@ -240,7 +294,7 @@
   </main>
   <footer><div class="wrap">Community cookbook for planning and learning. Validate permissions, licensing, cloud availability, privacy, and organizational policy before deployment.</div></footer>
   <div id="backdrop" class="modal-backdrop" role="presentation">
-    <article class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <article class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title" aria-describedby="modal-summary" tabindex="-1">
       <div class="modal-header">
         <div><div id="modal-meta" class="eyebrow"></div><h2 id="modal-title"></h2></div>
         <button id="close" class="close" type="button" aria-label="Close details">Close</button>
@@ -254,7 +308,8 @@
       <div class="modal-actions"><button id="copy-endpoint" class="action primary" type="button">Copy full endpoint</button><button id="copy-perms" class="action" type="button">Copy permissions</button></div>
     </article>
   </div>
-  <div id="toast" class="toast" role="status"></div>
+  <div id="toast" class="toast" role="status" aria-live="polite" aria-atomic="true"></div>
+  <div id="reader-status" class="visually-hidden" role="status" aria-live="polite" aria-atomic="true"></div>
   <script>
     const existingPerms = new Set(["User.Read.All", "Application.Read.All", "Directory.Read.All", "Organization.Read.All"]);
     const refs = {
@@ -267,12 +322,24 @@
       groups: ["List groups API", "https://learn.microsoft.com/graph/api/group-list?view=graph-rest-1.0"],
       device: ["List devices API", "https://learn.microsoft.com/graph/api/device-list?view=graph-rest-1.0"],
       roles: ["List role assignments API", "https://learn.microsoft.com/graph/api/rbacapplication-list-roleassignments?view=graph-rest-1.0"],
+      roleEligibility: ["List role eligibility schedule instances API", "https://learn.microsoft.com/graph/api/rbacapplication-list-roleeligibilityscheduleinstances?view=graph-rest-1.0"],
       risk: ["List risky users API", "https://learn.microsoft.com/graph/api/riskyuser-list?view=graph-rest-1.0"],
+      riskDetections: ["List risk detections API", "https://learn.microsoft.com/graph/api/riskdetection-list?view=graph-rest-1.0"],
       ca: ["List Conditional Access policies API", "https://learn.microsoft.com/graph/api/conditionalaccessroot-list-policies?view=graph-rest-1.0"],
       auth: ["List user registration details API", "https://learn.microsoft.com/graph/api/authenticationmethodsroot-list-userregistrationdetails?view=graph-rest-1.0"],
       intune: ["List managed devices API", "https://learn.microsoft.com/graph/api/intune-devices-manageddevice-list?view=graph-rest-1.0"],
       health: ["List service health overviews API", "https://learn.microsoft.com/graph/api/serviceannouncement-list-healthoverviews?view=graph-rest-1.0"],
-      skus: ["List subscribed SKUs API", "https://learn.microsoft.com/graph/api/subscribedsku-list?view=graph-rest-1.0"]
+      skus: ["List subscribed SKUs API", "https://learn.microsoft.com/graph/api/subscribedsku-list?view=graph-rest-1.0"],
+      domain: ["List domains API", "https://learn.microsoft.com/graph/api/domain-list?view=graph-rest-1.0"],
+      adminunit: ["List administrative units API", "https://learn.microsoft.com/graph/api/directory-list-administrativeunits?view=graph-rest-1.0"],
+      accessreviews: ["List access review definitions API", "https://learn.microsoft.com/graph/api/accessreviewset-list-definitions?view=graph-rest-1.0"],
+      roledefinitions: ["List directory role definitions API", "https://learn.microsoft.com/graph/api/rbacapplication-list-roledefinitions?view=graph-rest-1.0"],
+      crossTenant: ["Cross-tenant access policy API", "https://learn.microsoft.com/graph/api/resources/crosstenantaccesspolicy?view=graph-rest-1.0"],
+      namedLocations: ["Conditional Access named locations API", "https://learn.microsoft.com/graph/api/conditionalaccessroot-list-namedlocations?view=graph-rest-1.0"],
+      authorizationPolicy: ["Authorization policy API", "https://learn.microsoft.com/graph/api/resources/authorizationpolicy?view=graph-rest-1.0"],
+      appRoleAssignments: ["List app role assignments API", "https://learn.microsoft.com/graph/api/serviceprincipal-list-approleassignedto?view=graph-rest-1.0"],
+      grants: ["List OAuth2 permission grants API", "https://learn.microsoft.com/graph/api/oauth2permissiongrant-list?view=graph-rest-1.0"],
+      authStrength: ["Authentication strength policies API", "https://learn.microsoft.com/graph/api/authenticationstrengthroot-list-policies?view=graph-rest-1.0"]
     };
     const F = (n, category, title, summary, endpoint, permissions, steps, notes, reference) =>
       ({n,category,title,summary,endpoint,permissions,steps,notes,reference});
@@ -306,8 +373,39 @@
       F(27,"Roles & audit","Privileged role change alerts","Alert security when directory role assignments are added or removed.","/auditLogs/directoryAudits?$filter=activityDateTime%20ge%20{UTC_START}&$select=id,activityDateTime,activityDisplayName,initiatedBy,targetResources,result",["AuditLog.Read.All"],["Schedule every 15–60 minutes within the tenant's audit visibility and retention constraints.","Get directory audit events; filter role-management activity names and successful results.","Extract the affected role/principal and initiator; deduplicate by event ID.","Send high-priority notification to the security response channel."],"For near-real-time guarantees, evaluate an event-driven source; scheduled polling introduces delay. Do not perform automatic remediation in this alert flow.",["audit","permissions"]),
       F(28,"Users & guests","MFA registration coverage","Send an aggregate report of users' registered authentication methods and MFA readiness.","/reports/authenticationMethods/userRegistrationDetails?$select=id,userDisplayName,userPrincipalName,isMfaRegistered,isMfaCapable,methodsRegistered",["AuditLog.Read.All"],["Schedule weekly or monthly.","GET user registration details and follow the report endpoint's pagination.","Aggregate counts by isMfaRegistered/isMfaCapable and produce a restricted exception list if approved.","Send the summary to identity security owners; avoid publishing individual method details broadly."],"Confirm the endpoint's current least-privileged permission and any report-specific licensing/retention requirements before consent.",["auth","permissions"]),
       F(29,"Devices","Entra device inventory and stale-device review","Identify registered devices that have not signed in recently for human review.","/devices?$select=id,displayName,operatingSystem,trustType,accountEnabled,approximateLastSignInDateTime",["Device.Read.All"],["Schedule monthly.","List devices and follow @odata.nextLink.","Compare approximateLastSignInDateTime with an approved age threshold; flag missing timestamps separately.","Send the list to device owners for review, without deleting or disabling devices."],"The sign-in timestamp is approximate and may be absent. Validate exceptions and device ownership before any cleanup.",["device","permissions"]),
-      F(30,"Devices","Intune noncompliant device report","Notify endpoint administrators about managed devices that are not compliant.","/deviceManagement/managedDevices?$filter=complianceState%20ne%20%27compliant%27&$select=id,deviceName,userPrincipalName,operatingSystem,complianceState,lastSyncDateTime",["DeviceManagementManagedDevices.Read.All"],["Schedule daily or weekly based on operations needs.","GET managed devices and follow Graph pagination.","Filter noncompliant or unknown compliance states and group by owner/platform.","Send a restricted remediation queue to endpoint administrators."],"Requires Intune/Endpoint Manager licensing and supported Graph access in the cloud. Device and user identifiers are sensitive; do not send broad email.",["intune","permissions"])
+      F(30,"Devices","Intune noncompliant device report","Notify endpoint administrators about managed devices that are not compliant.","/deviceManagement/managedDevices?$filter=complianceState%20ne%20%27compliant%27&$select=id,deviceName,userPrincipalName,operatingSystem,complianceState,lastSyncDateTime",["DeviceManagementManagedDevices.Read.All"],["Schedule daily or weekly based on operations needs.","GET managed devices and follow Graph pagination.","Filter noncompliant or unknown compliance states and group by owner/platform.","Send a restricted remediation queue to endpoint administrators."],"Requires Intune/Endpoint Manager licensing and supported Graph access in the cloud. Device and user identifiers are sensitive; do not send broad email.",["intune","permissions"]),
+      F(31,"Domains & tenant","Verified domain inventory","Report verified domains, default domain, and domain authentication type.","/domains?$select=id,authenticationType,isVerified,isDefault,isInitial,isRoot,supportedServices",["Domain.Read.All"],["Schedule monthly.","GET domains and select the fields shown; follow pagination if returned.","Highlight the default domain, unverified entries, and authentication type for review.","Send the inventory to tenant administrators."],"Domain metadata is security-sensitive; confirm the exact cloud endpoint and current permission requirement.",["domain","permissions"]),
+      F(32,"Domains & tenant","Federated domain configuration review","Inventory federation configuration metadata for verified federated domains.","/domains/{domainId}/federationConfiguration",["Domain.Read.All"],["List domains and select verified domains with authenticationType equal to Federated.","For each such domain, retrieve its federation configuration.","Report issuer, passive sign-in URI, preferred authentication protocol, and certificate validity metadata only.","Send to the identity federation owner for periodic review."],"Do not include tokens, private keys, or signing secrets. Treat relying-party and issuer details as sensitive; verify permissions for the federation-configuration endpoint.",["domain","permissions"]),
+      F(33,"Domains & tenant","Administrative unit inventory","Create a directory of administrative units and their assigned scope types.","/directory/administrativeUnits?$select=id,displayName,description,isMemberManagementRestricted",["AdministrativeUnit.Read.All"],["Schedule monthly.","List administrative units and follow pagination.","For each unit, optionally list scoped members and owners using the documented relationship endpoints.","Send names, scope flags, and owner coverage to directory governance."],"Administrative units may represent delegated administrative boundaries; restrict access to the report.",["adminunit","permissions"]),
+      F(34,"Roles & audit","User account change digest","Summarize user creation, update, disable, and deletion audit events.","/auditLogs/directoryAudits?$filter=activityDateTime%20ge%20{UTC_START}&$select=id,activityDateTime,activityDisplayName,initiatedBy,targetResources,result",["AuditLog.Read.All"],["Run every few hours or daily with an overlapping time window.","Fetch directory audit events and filter user-management activities by category/name.","Extract actor, target, result, and event time; deduplicate using event IDs.","Send a digest to identity operations and update a stored watermark after delivery."],"Audit event names may vary by operation; check actual tenant events and audit-log retention.",["audit","permissions"]),
+      F(35,"Roles & audit","App registration change digest","Alert on new app registrations and updates to application credentials or configuration.","/auditLogs/directoryAudits?$filter=activityDateTime%20ge%20{UTC_START}&$select=id,activityDateTime,activityDisplayName,initiatedBy,targetResources,result",["AuditLog.Read.All"],["Schedule every 15–60 minutes or daily.","Read a bounded audit window and filter application-management and credential-related events.","Include application identity, initiator, result, and time; deduplicate event IDs.","Notify the application security owner for review."],"This is an alert, not an app-blocking response. Tune activity-name filters against your tenant's emitted audit events.",["audit","permissions"]),
+      F(36,"Roles & audit","Admin consent change alert","Notify security when a tenant-wide OAuth permission grant is created or changed.","/auditLogs/directoryAudits?$filter=activityDateTime%20ge%20{UTC_START}&$select=id,activityDateTime,activityDisplayName,initiatedBy,targetResources,result",["AuditLog.Read.All"],["Poll a bounded audit window at an interval supported by the tenant's log availability.","Filter consent/permission-grant-related audit events and inspect targetResources.","Resolve the application and granted permissions where possible, then include the actor and timestamp.","Send a high-priority alert to application governance; keep a deduplication store."],"Activity names and target resource details must be validated in a test tenant; avoid triggering on unrelated updates.",["audit","permissions"]),
+      F(37,"Sign-ins & risk","Risk detection digest","Summarize Identity Protection risk detections for analyst review.","/identityProtection/riskDetections?$filter=activityDateTime%20ge%20{UTC_START}",["IdentityRiskEvent.Read.All"],["Run daily when Identity Protection is licensed.","Query risk detections in a bounded date range; follow pagination.","Summarize detection type, risk level, user, and time while minimizing personal data.","Send to the security operations queue and record processed event IDs."],"Identity Protection licensing and retention apply. Confirm the application permission and available properties in your cloud before consent.",["riskDetections","permissions"]),
+      F(38,"Sign-ins & risk","High-risk sign-in alert","Notify analysts about sign-ins classified with elevated risk.","/auditLogs/signIns?$filter=createdDateTime%20ge%20{UTC_START}&$select=id,createdDateTime,userPrincipalName,appDisplayName,riskLevelDuringSignIn,riskState,status",["AuditLog.Read.All"],["Schedule frequently enough for the operational response target.","Query a short sign-in window, then filter elevated risk levels and failed/successful outcomes as needed.","Include event ID, user, app, risk state, and time; minimize extra identifying details.","Deduplicate and send alerts to an approved security channel."],"Risk properties depend on licensing, policy, and log availability. Validate the response schema and retention in your tenant.",["signin","permissions"]),
+      F(39,"Conditional Access","Conditional Access exclusion review","Identify policies with excluded users or groups for a security owner to validate.","/identity/conditionalAccess/policies?$select=id,displayName,state,conditions",["Policy.Read.All"],["Schedule monthly.","Retrieve policy conditions, including users.excludeUsers and users.excludeGroups.","Resolve the excluded IDs to display names if necessary and compare them with an approved exception register.","Send changes and stale exceptions to the policy owner."],"Exclusions can include break-glass accounts for valid reasons. Never remove an exclusion automatically; limit report recipients.",["ca","permissions"]),
+      F(40,"Conditional Access","Named locations inventory","List IP ranges and countries/regions configured as Conditional Access named locations.","/identity/conditionalAccess/namedLocations",["Policy.Read.All"],["Schedule monthly.","List named locations and follow pagination.","Summarize display name, trusted status, location type, and configured ranges/countries for authorized reviewers.","Send change candidates to the Conditional Access owner."],"IP ranges and location policy disclose security configuration. Restrict report access and avoid sending full ranges to broad groups.",["namedLocations","permissions"]),
+      F(41,"Conditional Access","Authentication strength policy inventory","Report configured authentication strength policies for identity governance.","/identity/conditionalAccess/authenticationStrength/policies",["Policy.Read.All"],["Run monthly.","Retrieve authentication strength policies and follow pagination.","Select display name, allowed combinations, and policy state/metadata.","Share with Conditional Access owners for configuration review."],"Authentication requirements can expose security posture; restrict the report and validate the policy properties for your Graph version.",["authStrength","permissions"]),
+      F(42,"Domains & tenant","Tenant organization profile","Create a compact organization and verified-domain snapshot for an admin runbook.","/organization?$select=id,displayName,verifiedDomains,tenantType",["Organization.Read.All"],["Schedule monthly or run manually when updating the tenant runbook.","GET the organization resource and select only required fields.","Include the tenant display name and verified domains; avoid putting tenant identifiers in public artifacts.","Store the output in an access-controlled admin location."],"Tenant identifiers and domain lists are sensitive. The screenshot shows Organization.Read.All as an application permission.",["permissions"]),
+      F(43,"Domains & tenant","External collaboration policy snapshot","Report the tenant's guest invitation and external collaboration settings.","/policies/authorizationPolicy?$select=id,allowInvitesFrom,guestUserRoleId,blockMsolPowerShell",["Policy.Read.All"],["Schedule monthly.","GET the authorization policy and select the settings approved for audit.","Compare values with an organization-approved baseline maintained in a controlled location.","Notify the identity governance owner of differences."],"A policy baseline is organization-specific. Verify property availability, licensing, and the endpoint permission before building.",["authorizationPolicy","permissions"]),
+      F(44,"Domains & tenant","Cross-tenant access policy snapshot","Report inbound/outbound default cross-tenant collaboration settings for a periodic review.","/policies/crossTenantAccessPolicy/default",["Policy.Read.All"],["Schedule monthly.","GET the default cross-tenant access policy.","Summarize inbound/outbound B2B collaboration and trust settings approved for review.","Send the snapshot to external collaboration policy owners."],"The default policy does not enumerate every partner-specific configuration. Use the documented partner endpoint for a separate report if needed.",["crossTenant","permissions"]),
+      F(45,"Applications","Enterprise application inventory","Report service principals (enterprise apps) with enabled state and publisher details.","/servicePrincipals?$select=id,displayName,appId,accountEnabled,servicePrincipalType,verifiedPublisher,createdDateTime",["Application.Read.All"],["Schedule monthly.","GET service principals and follow pagination.","Include app ID, display name, publisher, service principal type, and enabled state.","Send the inventory to application governance."],"Enterprise applications are service principals, distinct from app registrations. Protect tenant-wide app inventory details.",["app","permissions"]),
+      F(46,"Applications","Disabled enterprise apps review","Find disabled service principals whose business owners should confirm status or clean-up plans.","/servicePrincipals?$filter=accountEnabled%20eq%20false&$select=id,displayName,appId,accountEnabled,servicePrincipalType",["Application.Read.All"],["Run monthly.","List disabled service principals and follow pagination.","Resolve owners where available and compare against approved exceptions.","Send a review queue; do not re-enable or delete registrations automatically."],"Disabled state may be intentional security containment. Never re-enable apps based only on an inventory result.",["app","permissions"]),
+      F(47,"Applications","Enterprise apps without owners","Identify service principals without an accountable owner.","/servicePrincipals?$select=id,displayName,appId,servicePrincipalType",["Application.Read.All"],["Schedule monthly.","List service principals and follow pagination.","For each, query /servicePrincipals/{id}/owners and flag empty owner sets.","Send to application governance for ownership assignment."],"A per-service-principal owners query can create significant request volume. Respect Graph throttling and exclude Microsoft-managed principals as approved.",["app","permissions"]),
+      F(48,"Applications","Enterprise app role assignment inventory","Export users and groups assigned to enterprise applications for access review.","/servicePrincipals/{servicePrincipalId}/appRoleAssignedTo",["Application.Read.All"],["Select business-critical enterprise apps from the service-principal inventory.","For each service principal, list appRoleAssignedTo and follow pagination.","Resolve principal display names and app-role display names where needed.","Send a restricted access roster to app owners for review."],"Assignments expose application access. The exact least-privileged permission can depend on the relationship endpoint; verify before granting.",["appRoleAssignments","permissions"]),
+      F(49,"Applications","Requested app permission inventory","List API permissions requested by app registrations for security review.","/applications?$select=id,displayName,appId,requiredResourceAccess",["Application.Read.All"],["Schedule monthly.","List applications with requiredResourceAccess and follow pagination.","Resolve resource IDs and role/scope IDs using the relevant service principal metadata.","Flag high-impact requested permissions for human review."],"Requested permissions are not the same as permissions actually granted. Use the consent-grant report separately to audit grants.",["app","permissions"]),
+      F(50,"Applications","Delegated consent grant inventory","Review OAuth delegated permission grants between client apps and users/tenants.","/oauth2PermissionGrants?$select=id,clientId,consentType,principalId,resourceId,scope",["DelegatedPermissionGrant.Read.All"],["Schedule monthly.","List OAuth2 permission grants and follow pagination.","Resolve client/resource service principals and identify tenant-wide consent versus per-user grants.","Send a restricted report to application governance."],"Consent details are sensitive. Verify this endpoint's current application permission and consider app-role assignments separately.",["grants","permissions"]),
+      F(51,"Applications","App-only permission grant inventory","Review app-role assignments that grant applications access to resource APIs.","/servicePrincipals/{resourceServicePrincipalId}/appRoleAssignedTo",["Application.Read.All"],["Inventory resource service principals and their appRoleAssignedTo relationships.","Resolve each client service principal and assigned app role to permission names.","Highlight high-impact application permissions for the security owner.","Keep report access restricted; do not revoke grants automatically."],"Some assignments can represent managed identities or first-party services; validate context before escalating. Check endpoint permission requirements.",["appRoleAssignments","permissions"]),
+      F(52,"Roles & audit","Directory role definition inventory","Document built-in and custom directory role definitions and permissions.","/roleManagement/directory/roleDefinitions?$select=id,displayName,isBuiltIn,isEnabled,templateId,description",["RoleManagement.Read.Directory"],["Run monthly or during role-governance reviews.","List directory role definitions and follow pagination.","Separate built-in and custom definitions and report enabled state and description.","Share with the identity governance administrators."],"Role definitions disclose privilege design. Limit report recipients and do not infer effective access from definitions alone.",["roledefinitions","permissions"]),
+      F(53,"Roles & audit","Privileged role eligibility inventory","Report users eligible for directory roles through PIM for access review.","/roleManagement/directory/roleEligibilityScheduleInstances?$expand=principal,roleDefinition",["RoleEligibilitySchedule.Read.Directory"],["Schedule weekly or monthly.","List role eligibility schedule instances and follow pagination.","Include principal, role, scope, and schedule end time where returned.","Send a review roster to privileged access owners."],"PIM features may require Entra ID Governance/P2 licensing. RoleEligibilitySchedule.Read.Directory is the narrow permission to check for this endpoint; verify it against current documentation.",["roleEligibility","permissions"]),
+      F(54,"Roles & audit","Privileged role activation digest","Summarize recent privileged role activations and assignment events.","/auditLogs/directoryAudits?$filter=activityDateTime%20ge%20{UTC_START}&$select=id,activityDateTime,activityDisplayName,initiatedBy,targetResources,result",["AuditLog.Read.All"],["Schedule every 15–60 minutes or daily according to response needs.","Filter for PIM and directory role activation-related audit activities.","Capture actor, target role, outcome, and time; deduplicate by event ID.","Send to the privileged access monitoring queue."],"Validate audit event names and PIM audit coverage in the tenant; polling is not a guaranteed real-time alert channel.",["audit","permissions"]),
+      F(55,"Roles & audit","Access review schedule inventory","Report access review definitions, scope, cadence, and reviewer configuration.","/identityGovernance/accessReviews/definitions",["AccessReview.Read.All"],["Run monthly.","List access review definitions and follow pagination.","Report review display name, scope, recurrence, reviewer, and status where available.","Send to governance owners to identify missing or outdated review schedules."],"Access reviews may require Entra ID Governance licensing. This recipe reports configuration; it does not submit decisions.",["accessreviews","permissions"]),
+      F(56,"Roles & audit","Access reviews ending soon","Notify owners when configured access review instances are nearing their end date.","/identityGovernance/accessReviews/definitions?$expand=instances",["AccessReview.Read.All"],["Schedule daily or weekly.","Retrieve definitions and review instances supported by the endpoint; follow next links.","Filter instances with an end date in the configured reminder window and unresolved decisions.","Notify the reviewer/owner without making access decisions."],"The exact expansion and instance fields may vary; follow the linked API documentation and validate in a non-production test.",["accessreviews","permissions"]),
+      F(57,"Devices","Hybrid and registered device inventory","Report Entra devices by trust type and operating system for endpoint coverage review.","/devices?$select=id,displayName,operatingSystem,operatingSystemVersion,trustType,accountEnabled,approximateLastSignInDateTime",["Device.Read.All"],["Schedule monthly.","List device objects with the selected fields and follow pagination.","Group by trustType and operating system; flag unexpected or unknown categories.","Send coverage metrics to endpoint operations."],"Trust type and sign-in properties can be absent; do not treat missing values as proof that a device is unmanaged.",["device","permissions"]),
+      F(58,"Devices","Disabled Entra device review","Inventory disabled device objects for owner validation and lifecycle cleanup.","/devices?$filter=accountEnabled%20eq%20false&$select=id,displayName,operatingSystem,trustType,accountEnabled,approximateLastSignInDateTime",["Device.Read.All"],["Schedule monthly.","Retrieve disabled device objects and follow pagination.","Add known exception and asset-management context if available.","Send a review queue to endpoint owners; keep all remediation manual."],"A disabled object can be a deliberate containment measure. Do not delete or enable devices automatically.",["device","permissions"]),
+      F(59,"Devices","Stale Intune managed device review","Find Intune managed devices with no recent synchronization for an owner review.","/deviceManagement/managedDevices?$select=id,deviceName,userPrincipalName,operatingSystem,complianceState,lastSyncDateTime",["DeviceManagementManagedDevices.Read.All"],["Schedule weekly or monthly.","List managed devices and follow @odata.nextLink.","Compare lastSyncDateTime with an approved threshold; put missing dates in a separate category.","Send a restricted review list to Intune administrators."],"Requires an active Intune license and supported API access. Stale sync is not proof a device is retired.",["intune","permissions"]),
+      F(60,"Applications","Credential expiry calendar","Build a 90-day calendar of application and service-principal credential expirations.","/applications?$select=id,displayName,appId,passwordCredentials,keyCredentials",["Application.Read.All"],["Schedule weekly and list application credential metadata.","For each password/certificate, compute remaining days until endDateTime and assign an expiry band.","Resolve owners and create a monthly calendar/digest with app and credential display name.","Persist notified credential IDs to avoid repeated alerts."],"This extends the 30-day alert into a planning calendar. Report metadata only, never expose secret values or private key material.",["app","permissions"])
     ];
+    document.getElementById("flow-total").textContent = String(flows.length);
     const categories = ["All", ...new Set(flows.map(f => f.category))];
     const grid = document.getElementById("grid");
     const search = document.getElementById("search");
@@ -335,14 +433,16 @@
         <article class="card">
           <div class="card-top"><span class="number">FLOW ${String(f.n).padStart(2,"0")}</span><span class="category">${esc(f.category)}</span></div>
           <h2>${esc(f.title)}</h2><p>${esc(f.summary)}</p>
-          <div class="perms">${f.permissions.map(p => `<span class="perm ${existingPerms.has(p) ? "existing" : ""}" title="${existingPerms.has(p) ? "Shown in the example app-registration screenshot" : "Not shown as granted in the screenshot"}">${esc(p)}</span>`).join("")}</div>
-          <button class="open" type="button" data-open="${f.n}">View setup →</button>
+          <div class="perms" aria-label="Required application permissions">${f.permissions.map(p => `<span class="perm ${existingPerms.has(p) ? "existing" : ""}" title="${existingPerms.has(p) ? "Shown in the example app-registration screenshot" : "Not shown as granted in the screenshot"}">${esc(p)}${existingPerms.has(p) ? " (shown in screenshot)" : ""}</span>`).join("")}</div>
+          <button class="open" type="button" data-open="${f.n}" aria-label="View setup for ${esc(f.title)}">View setup →</button>
         </article>`).join("") : `<div class="empty">No recipes match. Try a different search or category.</div>`;
-      grid.querySelectorAll("[data-open]").forEach(button => button.addEventListener("click", () => openFlow(Number(button.dataset.open))));
+      grid.querySelectorAll("[data-open]").forEach(button => button.addEventListener("click", event => openFlow(Number(button.dataset.open), event.currentTarget)));
     }
-    function openFlow(n) {
+    let lastTrigger = null;
+    function openFlow(n, trigger = document.activeElement) {
       activeFlow = flows.find(f => f.n === n);
       if (!activeFlow) return;
+      lastTrigger = trigger;
       document.getElementById("modal-meta").textContent = `FLOW ${String(activeFlow.n).padStart(2,"0")} · ${activeFlow.category}`;
       document.getElementById("modal-title").textContent = activeFlow.title;
       document.getElementById("modal-summary").textContent = activeFlow.summary;
@@ -356,13 +456,21 @@
       document.getElementById("modal-notes").textContent = activeFlow.notes;
       document.getElementById("modal-refs").innerHTML = activeFlow.reference.map(key => `<a href="${esc(refs[key][1])}" target="_blank" rel="noopener noreferrer">${esc(refs[key][0])}</a>`).join(" · ") + ` · <a href="${esc(refs.permissions[1])}" target="_blank" rel="noopener noreferrer">Permission reference</a>`;
       document.getElementById("backdrop").classList.add("open");
+      document.getElementById("topbar").inert = true;
+      document.getElementById("main-content").inert = true;
+      document.querySelector("footer").inert = true;
       document.getElementById("close").focus();
       document.body.style.overflow = "hidden";
     }
     function closeModal() {
       document.getElementById("backdrop").classList.remove("open");
+      document.getElementById("topbar").inert = false;
+      document.getElementById("main-content").inert = false;
+      document.querySelector("footer").inert = false;
       document.body.style.overflow = "";
       activeFlow = null;
+      if (lastTrigger && lastTrigger.isConnected) lastTrigger.focus();
+      lastTrigger = null;
     }
     function toast(message) {
       const element = document.getElementById("toast");
@@ -379,9 +487,44 @@
     document.getElementById("sort").addEventListener("change", render);
     document.getElementById("close").addEventListener("click", closeModal);
     document.getElementById("backdrop").addEventListener("click", event => { if (event.target.id === "backdrop") closeModal(); });
-    document.addEventListener("keydown", event => { if (event.key === "Escape") closeModal(); });
+    document.addEventListener("keydown", event => {
+      if (!document.getElementById("backdrop").classList.contains("open")) return;
+      if (event.key === "Escape") { event.preventDefault(); closeModal(); return; }
+      if (event.key === "Tab") {
+        const focusable = [...document.querySelectorAll("#backdrop button, #backdrop a[href], #backdrop [tabindex]:not([tabindex='-1'])")];
+        if (!focusable.length) { event.preventDefault(); document.querySelector(".modal").focus(); return; }
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+        else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+      }
+    });
     document.getElementById("copy-endpoint").addEventListener("click", () => activeFlow && copy(`${host()}${activeFlow.endpoint}`));
     document.getElementById("copy-perms").addEventListener("click", () => activeFlow && copy(activeFlow.permissions.join("\n")));
+    const contrastToggle = document.getElementById("contrast-toggle");
+    const savedContrast = localStorage.getItem("cookbook-high-contrast") === "true";
+    const setContrast = enabled => {
+      if (enabled) document.documentElement.setAttribute("data-contrast", "high");
+      else document.documentElement.removeAttribute("data-contrast");
+      contrastToggle.setAttribute("aria-pressed", String(enabled));
+      contrastToggle.textContent = `High contrast: ${enabled ? "on" : "off"}`;
+      localStorage.setItem("cookbook-high-contrast", String(enabled));
+    };
+    let readerScale = Number(localStorage.getItem("cookbook-reader-scale")) || 1;
+    const setReaderScale = scale => {
+      readerScale = Math.min(1.5, Math.max(1, scale));
+      document.documentElement.style.setProperty("--reader-scale", String(readerScale));
+      localStorage.setItem("cookbook-reader-scale", String(readerScale));
+      document.getElementById("text-smaller").disabled = readerScale <= 1;
+      document.getElementById("text-larger").disabled = readerScale >= 1.5;
+      document.getElementById("reader-status").textContent = `Text size ${Math.round(readerScale * 100)} percent`;
+    };
+    document.getElementById("text-smaller").addEventListener("click", () => setReaderScale(readerScale - 0.1));
+    document.getElementById("text-larger").addEventListener("click", () => setReaderScale(readerScale + 0.1));
+    contrastToggle.addEventListener("click", () => setContrast(contrastToggle.getAttribute("aria-pressed") !== "true"));
+    setContrast(savedContrast);
+    setReaderScale(readerScale);
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) document.documentElement.setAttribute("data-motion", "reduce");
     renderFilters();
     render();
   </script>

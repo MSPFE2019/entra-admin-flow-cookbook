@@ -1,8 +1,21 @@
 # Entra Admin Flow Cookbook
 
-An interactive, practical catalog of 30 Microsoft Entra and Microsoft 365 admin reporting workflows that can be built with Power Automate and Microsoft Graph.
+An interactive, practical catalog of 60 Microsoft Entra and Microsoft 365 admin reporting workflows that can be built with Power Automate and Microsoft Graph.
 
-**Start here:** [Open the interactive flow catalog](index.html). Search by task, category, endpoint, or permission; filter flows; open a recipe for its endpoint, permission checklist, and build steps. The same page is published with GitHub Pages after deployment is enabled.
+**Start here:** [Open the interactive flow catalog](index.html). Search by task, category, endpoint, or permission; filter flows; choose a cloud; and open a recipe for its endpoint, permission checklist, and build steps. The public site is published at [mspfe2019.github.io/entra-admin-flow-cookbook](https://mspfe2019.github.io/entra-admin-flow-cookbook/).
+
+### Accessibility
+
+The catalog is designed to be usable with vision and mobility access needs:
+
+- Increase/decrease text size using the **A+ / A−** controls (or use browser zoom); preference is saved on the current device.
+- Enable the **High contrast** setting or use your operating system's forced-colors/high-contrast mode.
+- Navigate by keyboard, use the visible focus indicator, and jump over navigation with **Skip to main content**.
+- Search and category result updates are announced to assistive technology. Dialogs have a title, trap keyboard focus, close with **Escape**, and return focus to the opening control.
+- Reduced-motion preferences are respected; controls and touch targets are sized for easier selection.
+- Content uses semantic headings, landmarks, labels, and readable permission text.
+
+Accessibility support is not a certification. Browser zoom, operating-system display settings, and screen readers may behave differently; report an issue if a workflow is difficult to use.
 
 These recipes are reporting and review automations. They do not change directory objects. That is intentional: first validate the data and recipients, then design a separate, approval-gated write flow if you need to make changes.
 
@@ -68,6 +81,13 @@ Common permissions used by the catalog:
 | `Device.Read.All` | Read Entra device directory objects |
 | `DeviceManagementManagedDevices.Read.All` | Read Intune managed-device details; Intune entitlement applies |
 | `ServiceHealth.Read.All` | Read Microsoft 365 service health |
+| `Domain.Read.All` | Read verified domains and domain configuration |
+| `AdministrativeUnit.Read.All` | Read administrative units |
+| `IdentityRiskEvent.Read.All` | Read Identity Protection risk detections |
+| `RoleEligibilitySchedule.Read.Directory` | Read PIM role eligibility schedule instances |
+| `AccessReview.Read.All` | Read access review configuration |
+| `Policy.Read.All` | Read Conditional Access and selected tenant policy configuration |
+| `DelegatedPermissionGrant.Read.All` | Read delegated OAuth permission grants |
 
 These are starting points, not a substitute for the endpoint's current permission table. For example, the screenshot shows `Organization.Read.All`, but `LicenseAssignment.Read.All` is the narrower permission to check first for subscribed SKUs. A broader permission that happens to be present is not a reason to use it. Prefer the least privileged **Application** permission accepted by the exact endpoint and obtain admin consent only for the flow's needs.
 
@@ -86,6 +106,12 @@ These are starting points, not a substitute for the endpoint's current permissio
 - [List user registration details API](https://learn.microsoft.com/graph/api/authenticationmethodsroot-list-userregistrationdetails?view=graph-rest-1.0)
 - [List managed devices API](https://learn.microsoft.com/graph/api/intune-devices-manageddevice-list?view=graph-rest-1.0)
 - [List service health overviews API](https://learn.microsoft.com/graph/api/serviceannouncement-list-healthoverviews?view=graph-rest-1.0)
+- [List domains API](https://learn.microsoft.com/graph/api/domain-list?view=graph-rest-1.0)
+- [List administrative units API](https://learn.microsoft.com/graph/api/directory-list-administrativeunits?view=graph-rest-1.0)
+- [List access review definitions API](https://learn.microsoft.com/graph/api/accessreviewset-list-definitions?view=graph-rest-1.0)
+- [List role eligibility schedule instances API](https://learn.microsoft.com/graph/api/rbacapplication-list-roleeligibilityscheduleinstances?view=graph-rest-1.0)
+- [List OAuth2 delegated permission grants API](https://learn.microsoft.com/graph/api/oauth2permissiongrant-list?view=graph-rest-1.0)
+- [List app role assignments API](https://learn.microsoft.com/graph/api/serviceprincipal-list-approleassignedto?view=graph-rest-1.0)
 - [Power Automate US Government service description](https://learn.microsoft.com/power-automate/us-govt)
 
 ## Disclaimer
