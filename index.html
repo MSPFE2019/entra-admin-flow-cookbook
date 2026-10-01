@@ -154,6 +154,15 @@
     .guide-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-top:16px; }
     .guide-card { background:var(--cp-surface); border:1px solid var(--cp-border); border-radius:16px; padding:16px; }
     .guide-card h3 { font-size:1rem; margin:0 0 8px; }
+    .http-walkthrough { margin:18px 0 26px; padding:20px; background:var(--cp-surface); border:2px solid var(--cp-accent); border-radius:16px; }
+    .http-walkthrough h3 { margin:0 0 8px; font-size:1.25rem; }
+    .http-walkthrough h4 { margin:18px 0 6px; }
+    .http-walkthrough p, .http-walkthrough li { line-height:1.7; }
+    .http-walkthrough table { width:100%; border-collapse:collapse; margin:14px 0; }
+    .http-walkthrough th, .http-walkthrough td { text-align:left; vertical-align:top; padding:10px; border:1px solid var(--cp-border-strong); }
+    .http-walkthrough th { background:var(--cp-surface-soft); }
+    .http-walkthrough code, .modal code { overflow-wrap:anywhere; }
+    .http-note { border-left:4px solid var(--cp-warning); padding:10px 14px; background:var(--cp-surface-soft); }
     code, pre { font-family:Consolas,"Courier New",Courier,monospace; }
     .guide code { overflow-wrap:anywhere; }
     footer { border-top:1px solid var(--cp-border); padding:20px 0 32px; color:var(--cp-text-soft); font-size:.88rem; }
@@ -217,7 +226,7 @@
       <div>
         <div class="eyebrow">Power Automate · Microsoft Graph · Read-only first</div>
         <h1>60 admin flows.<br>One practical catalog.</h1>
-        <p>Find a tenant-admin reporting idea, see the Graph request and application permissions, then follow the recipe to build it in Power Automate.</p>
+        <p>Find a tenant-admin reporting idea, see the Graph request and application permissions, then follow the beginner-friendly HTTP setup and recipe instructions.</p>
       </div>
       <div class="stats" aria-label="Catalog summary">
         <div class="stat"><strong id="flow-total">60</strong><span>flow recipes</span></div>
@@ -230,6 +239,95 @@
     <div class="wrap">
       <div class="notice"><strong>Permission note:</strong> “shown in screenshot” means the permission appeared as an application permission in the example registration. “Add/verify” means it was not shown there. These are not live tenant checks. The catalog is read-only by design; do not grant every permission at once.</div>
     </div>
+    <section id="setup" class="guide" aria-labelledby="setup-title">
+      <div class="wrap">
+        <div class="eyebrow">Start here · shared foundation</div>
+        <h2 id="setup-title">Beginner setup: app registration and HTTP</h2>
+        <p>Follow this once before building any of the 60 recipes. Each recipe card then gives you its own exact Graph request, permissions, and flow-specific steps.</p>
+        <div class="guide-grid">
+          <article class="guide-card">
+            <h3>1 · Prepare the app and permissions</h3>
+            <ol>
+              <li>Open the Entra admin center in the same cloud as your tenant, then open <strong>App registrations</strong>.</li>
+              <li>Choose the app registration you intend to use. Copy its <strong>Application (client) ID</strong> and your tenant's <strong>Directory (tenant) ID</strong>.</li>
+              <li>Open <strong>API permissions → Add a permission → Microsoft Graph → Application permissions</strong>.</li>
+              <li>Open the recipe, find <strong>Application permissions to check</strong>, and add only the permissions that Microsoft documents for that exact endpoint. Ask an authorized admin to select <strong>Grant admin consent</strong>.</li>
+              <li>Use an approved secret or certificate. If you use a client secret, copy its <em>Value</em> when created and store it in your organization's approved vault. Never paste a secret in the URI, a message, a screenshot, or public repository.</li>
+            </ol>
+            <p class="http-note"><strong>Important:</strong> Application permissions allow unattended access to tenant data. The permission chips are guidance, not a live check of your tenant. Do not add all cookbook permissions to one app just because they appear here.</p>
+          </article>
+          <article class="guide-card">
+            <h3>2 · Create a test flow</h3>
+            <ol>
+              <li>In Power Automate, choose <strong>Create → Scheduled cloud flow</strong>. Give it a name and set it to run weekly while you are testing.</li>
+              <li>Choose <strong>New step</strong>, search for <strong>HTTP</strong>, and select the HTTP action (often marked <strong>Premium</strong>). If your tenant offers an approved Microsoft Entra ID HTTP connector or custom connector instead, follow your admin's connector instructions.</li>
+              <li>For a first test, use a read-only inventory recipe, such as guest account inventory, and a restricted recipient. Keep the flow turned off until the test response is correct.</li>
+            </ol>
+          </article>
+          <article class="guide-card">
+            <h3>3 · Prepare the request URL</h3>
+            <ol>
+              <li>Choose your cloud below. Worldwide tenants use <code>graph.microsoft.com</code>; GCC High tenants use <code>graph.microsoft.us</code>. The Graph and sign-in hosts must both belong to your tenant's cloud.</li>
+              <li>Open a recipe and select <strong>Copy full endpoint</strong>. The endpoint combines the cloud host, <code>/v1.0</code>, and that recipe's path.</li>
+              <li>Paste the copied full URL into the HTTP action's <strong>URI</strong> box. For a first test, use the Worldwide or GCC High option selected here and keep the request unchanged.</li>
+            </ol>
+          </article>
+        </div>
+        <div class="http-walkthrough" aria-labelledby="http-fields-title">
+          <h3 id="http-fields-title">HTTP action: what to put in every field</h3>
+          <p>For the standard Power Automate <strong>HTTP</strong> action, set the request up like this. The recipe card supplies the endpoint and permission; these authentication fields are the same for all 60 recipes.</p>
+          <table>
+            <caption class="visually-hidden">Power Automate HTTP action field values</caption>
+            <thead><tr><th scope="col">HTTP field</th><th scope="col">Enter or select</th><th scope="col">What it means</th></tr></thead>
+            <tbody>
+              <tr><th scope="row">Method</th><td><code>GET</code></td><td>Read information from Graph. All cookbook examples are read-only.</td></tr>
+              <tr><th scope="row">URI</th><td><code id="sample-http-uri">https://graph.microsoft.com/v1.0/users</code></td><td>Use the full endpoint copied from the selected recipe. Do not put your tenant ID here.</td></tr>
+              <tr><th scope="row">Headers</th><td><code>Accept</code> = <code>application/json</code></td><td>Asks Graph to return JSON. Add as a header name/value pair if the action exposes Headers.</td></tr>
+              <tr><th scope="row">Authentication</th><td><strong>Active Directory OAuth</strong> (may appear as OAuth in some versions)</td><td>Gets a token for the registered app. Do not manually create or paste an access token.</td></tr>
+              <tr><th scope="row">Authority</th><td id="sample-http-authority">https://login.microsoftonline.com</td><td>The sign-in service for the tenant's cloud.</td></tr>
+              <tr><th scope="row">Tenant</th><td>Your Directory (tenant) ID</td><td>The tenant that owns the app registration and data.</td></tr>
+              <tr><th scope="row">Audience</th><td id="sample-http-audience">https://graph.microsoft.com</td><td>The Graph resource this token is for. Enter the base URL only—no <code>/v1.0</code> and no API path.</td></tr>
+              <tr><th scope="row">Client ID</th><td>Your Application (client) ID</td><td>Identifies the app registration.</td></tr>
+              <tr><th scope="row">Credential Type / Secret</th><td><strong>Secret</strong> and the secret Value, only if your approved connector requires it</td><td>Do not use the secret's display name or secret ID. Prefer an approved secret store; protect flow ownership and run history.</td></tr>
+              <tr><th scope="row">Body</th><td>Leave empty</td><td>A GET request does not need a request body.</td></tr>
+            </tbody>
+          </table>
+          <p id="http-cloud-hint" role="status" aria-live="polite"></p>
+          <p class="http-note"><strong>Connector versions differ:</strong> if your HTTP action does not show the fields above, don't guess or put credentials in a different box. Stop and check the selected connector's Microsoft documentation or ask your Power Platform administrator. In GCC High, use <code>login.microsoftonline.us</code> as Authority and <code>https://graph.microsoft.us</code> as Audience; never mix cloud hosts.</p>
+        </div>
+        <div class="guide-grid">
+          <article class="guide-card">
+            <h3>4 · Run once and read the result</h3>
+            <ol>
+              <li>Select <strong>Save</strong>, then <strong>Test</strong> and run the flow manually if offered.</li>
+              <li>Open the run history and expand the HTTP action. A <code>200</code> status means the request succeeded. In the body, a collection normally has a <code>value</code> array.</li>
+              <li>A <code>401</code> usually means sign-in, tenant, audience, or credential trouble. A <code>403</code> usually means the app permission or admin consent is missing. Read the error body; don't post it publicly if it contains tenant or user details.</li>
+              <li>A <code>404</code> can mean a wrong URL/cloud or unavailable API; a <code>429</code> means slow down and retry after Graph's <code>Retry-After</code> interval.</li>
+            </ol>
+          </article>
+          <article class="guide-card">
+            <h3>5 · Turn the response into a report</h3>
+            <ol>
+              <li>For an endpoint that returns a collection, add <strong>Apply to each</strong> and select the HTTP response's <code>value</code> array—not the entire Body object.</li>
+              <li>Inside the loop, use the current item (the expression <code>item()</code>) when appending one record. Do not append the whole array into an array variable.</li>
+              <li>Use <strong>Select</strong> to choose only report columns, then <strong>Create HTML table</strong> or an approved notification action.</li>
+              <li>Test with yourself or a restricted admin mailbox before adding recipients. Directory exports often contain sensitive employee or security data.</li>
+            </ol>
+          </article>
+          <article class="guide-card">
+            <h3>6 · Add pagination before production</h3>
+            <ol>
+              <li>Graph can split a long list across pages. When the response includes <code>@odata.nextLink</code>, the response is not complete yet.</li>
+              <li>Beginner pattern: set a string variable called <code>nextLink</code> to the first full URL; use a <strong>Do until</strong> loop while it is not empty.</li>
+              <li>Inside the loop, call HTTP with <code>nextLink</code>, process that response's <code>value</code> array, then set <code>nextLink</code> to <code>coalesce(body('HTTP')?['@odata.nextLink'], '')</code>.</li>
+              <li>Make sure the loop performs the first HTTP request before checking for an empty next link. Use an iteration limit appropriate for your tenant.</li>
+            </ol>
+          </article>
+        </div>
+        <p>Many HTTP actions require Power Automate Premium. National-cloud API and connector availability vary. Check your licensing, tenant's data policy, and the linked Microsoft endpoint page before enabling a schedule.</p>
+        <p><a href="README.md">Read the complete beginner setup and security notes in README</a> · <a href="https://learn.microsoft.com/graph/permissions-reference">Microsoft Graph permissions reference</a> · <a href="https://learn.microsoft.com/graph/deployments">Graph national cloud deployments</a></p>
+      </div>
+    </section>
     <section id="catalog" aria-labelledby="catalog-title">
       <h2 id="catalog-title" class="visually-hidden">Flow catalog</h2>
       <div class="toolbar">
@@ -253,44 +351,6 @@
         <div id="grid" class="grid"></div>
       </div>
     </section>
-    <section id="setup" class="guide" aria-labelledby="setup-title">
-      <div class="wrap">
-        <div class="eyebrow">Shared foundation</div>
-        <h2 id="setup-title">Set up the app and scheduled flow</h2>
-        <p>Use the exact least-privileged Graph <strong>Application</strong> permission for the recipe endpoint, with admin consent. The cloud choice above changes the displayed Graph host and OAuth authority.</p>
-        <div class="guide-grid">
-          <article class="guide-card">
-            <h3>1 · App registration</h3>
-            <ol>
-              <li>Register the app in the same Entra cloud as the target tenant.</li>
-              <li>Add only the permission(s) shown in the recipe and grant admin consent.</li>
-              <li>Use a certificate if supported; otherwise protect the secret in an approved secret store and define rotation ownership.</li>
-              <li>Do not put credentials in Compose, email, source files, or chat.</li>
-            </ol>
-          </article>
-          <article class="guide-card">
-            <h3>2 · Scheduled flow</h3>
-            <ol>
-              <li>Create a Scheduled cloud flow with a Recurrence trigger.</li>
-              <li>Add an HTTP GET action or approved custom connector; use the selected cloud's host and OAuth authority.</li>
-              <li>Parse the JSON response, iterate over <code>value</code>, and follow <code>@odata.nextLink</code> until no page remains.</li>
-              <li>Handle 429/5xx responses with retries and keep notifications scoped to approved recipients.</li>
-            </ol>
-          </article>
-          <article class="guide-card">
-            <h3>3 · Verify before enabling</h3>
-            <ol>
-              <li>Test with a short date window or small <code>$top</code> value when supported.</li>
-              <li>Check permission requirements on Microsoft's endpoint reference before consent.</li>
-              <li>For recurring digests, store a watermark or processed IDs to prevent duplicate messages.</li>
-              <li>Confirm premium connector licensing, government-cloud availability, DLP, and data retention.</li>
-            </ol>
-          </article>
-        </div>
-        <p>Many Power Automate HTTP patterns require premium licensing. GCC High uses <code>graph.microsoft.us</code> and <code>login.microsoftonline.us</code>; verify the exact availability and API support in your cloud.</p>
-        <p><a href="README.md">Read the complete setup and security notes in README</a> · <a href="https://learn.microsoft.com/graph/permissions-reference">Microsoft Graph permissions reference</a> · <a href="https://learn.microsoft.com/graph/deployments">Graph national cloud deployments</a></p>
-      </div>
-    </section>
   </main>
   <footer><div class="wrap">Community cookbook for planning and learning. Validate permissions, licensing, cloud availability, privacy, and organizational policy before deployment.</div></footer>
   <div id="backdrop" class="modal-backdrop" role="presentation">
@@ -301,7 +361,9 @@
       </div>
       <p id="modal-summary" class="summary"></p>
       <section class="modal-section"><h3>Microsoft Graph request</h3><code id="modal-endpoint" class="endpoint"></code><p id="modal-permission-note"></p></section>
+      <section class="modal-section"><h3>HTTP action for this recipe</h3><p>In Power Automate, add an HTTP action, choose <strong>GET</strong>, and paste this complete URI. Use the shared beginner setup near the top of the page for every authentication field.</p><code id="modal-http-uri" class="endpoint"></code><p id="modal-http-placeholders"></p></section>
       <section class="modal-section"><h3>Application permissions to check</h3><div id="modal-perms" class="permission-list"></div></section>
+      <section class="modal-section"><h3>Beginner HTTP setup steps</h3><ol id="modal-http-steps" class="steps"></ol></section>
       <section class="modal-section"><h3>Power Automate build steps</h3><ol id="modal-steps" class="steps"></ol></section>
       <section class="modal-section"><h3>Operational notes</h3><div id="modal-notes" class="callout"></div></section>
       <section class="modal-section"><h3>Microsoft references</h3><div id="modal-refs"></div></section>
@@ -416,6 +478,7 @@
     const esc = value => String(value).replace(/[&<>"']/g, char => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[char]));
     const host = () => cloud.value === "gcc" ? "https://graph.microsoft.us" : "https://graph.microsoft.com";
     const authority = () => cloud.value === "gcc" ? "https://login.microsoftonline.us" : "https://login.microsoftonline.com";
+    const apiRoot = () => `${host()}/v1.0`;
     const searchable = f => `${f.n} ${f.category} ${f.title} ${f.summary} ${f.endpoint} ${f.permissions.join(" ")} ${f.steps.join(" ")}`.toLowerCase();
     function renderFilters() {
       categoryFilters.innerHTML = categories.map(c => `<button class="filter" type="button" aria-pressed="${c === activeCategory}" data-category="${esc(c)}">${esc(c)}</button>`).join("");
@@ -446,12 +509,34 @@
       document.getElementById("modal-meta").textContent = `FLOW ${String(activeFlow.n).padStart(2,"0")} · ${activeFlow.category}`;
       document.getElementById("modal-title").textContent = activeFlow.title;
       document.getElementById("modal-summary").textContent = activeFlow.summary;
-      document.getElementById("modal-endpoint").textContent = `${host()}${activeFlow.endpoint}`;
+      const fullUri = `${apiRoot()}${activeFlow.endpoint}`;
+      document.getElementById("modal-endpoint").textContent = fullUri;
+      document.getElementById("modal-http-uri").textContent = fullUri;
+      const placeholders = fullUri.match(/\{[^}]+\}/g);
+      let placeholderHelp = "This request has no template placeholders. Copy it as shown.";
+      if (placeholders) {
+        const escapedUri = fullUri.replace(/'/g, "''");
+        placeholderHelp = `This is a template URL; do not send the braces literally. ${placeholders.map(token => {
+          if (token === "{UTC_START}") {
+            return `For ${token}, select Expression in URI and use: replace('${escapedUri}', '{UTC_START}', encodeUriComponent(formatDateTime(addHours(utcNow(),-24),'yyyy-MM-ddTHH:mm:ssZ'))). This example requests the prior 24 hours.`;
+          }
+          return `For ${token}, get the matching ID in an earlier action. If this ID comes from the current loop item, select Expression in URI and adapt: replace('${escapedUri}', '${token}', string(items('Apply_to_each')?['id'])). Your loop's action name may differ.`;
+        }).join(" ")}`;
+      }
+      document.getElementById("modal-http-placeholders").textContent = placeholderHelp;
       const windowHint = activeFlow.endpoint.includes("{UTC_START}")
         ? " Replace {UTC_START} with a URL-encoded UTC time, for example encodeUriComponent(formatDateTime(addHours(utcNow(),-24),'yyyy-MM-ddTHH:mm:ssZ'))."
         : "";
       document.getElementById("modal-permission-note").textContent = `OAuth authority for the selected cloud: ${authority()}. Use the Graph base URL above as the token audience.${windowHint}`;
       document.getElementById("modal-perms").innerHTML = activeFlow.permissions.map(p => `<span class="perm ${existingPerms.has(p) ? "existing" : ""}">${esc(p)}${existingPerms.has(p) ? " · shown in screenshot" : " · add/verify"}</span>`).join("");
+      const httpSteps = [
+        "In your scheduled flow, select New step, search for HTTP, and add the HTTP action your tenant has approved. This action may require Power Automate Premium.",
+        "Set Method to GET. Paste the full URI shown above into URI. Leave Body empty; the recipe query string is already part of that URI.",
+        `Set Authentication to Active Directory OAuth if available. Set Authority to ${authority()}, Tenant to your Directory (tenant) ID, Audience to ${host()}, and Client ID to your Application (client) ID.`,
+        "Enter a securely stored client secret Value only if your approved connector requires a secret. Do not place it in the URL, a Compose action, or a notification.",
+        "Save and test the flow. Open Run history and inspect the HTTP action. Continue only when the status is 200; if you see an error, follow the beginner troubleshooting steps above."
+      ];
+      document.getElementById("modal-http-steps").innerHTML = httpSteps.map(step => `<li>${esc(step)}</li>`).join("");
       document.getElementById("modal-steps").innerHTML = activeFlow.steps.map(step => `<li>${esc(step)}</li>`).join("");
       document.getElementById("modal-notes").textContent = activeFlow.notes;
       document.getElementById("modal-refs").innerHTML = activeFlow.reference.map(key => `<a href="${esc(refs[key][1])}" target="_blank" rel="noopener noreferrer">${esc(refs[key][0])}</a>`).join(" · ") + ` · <a href="${esc(refs.permissions[1])}" target="_blank" rel="noopener noreferrer">Permission reference</a>`;
@@ -483,7 +568,16 @@
       catch { toast("Clipboard unavailable in this browser"); }
     }
     search.addEventListener("input", render);
-    cloud.addEventListener("change", () => { render(); if (activeFlow) openFlow(activeFlow.n); });
+    cloud.addEventListener("change", () => {
+      render();
+      document.getElementById("sample-http-uri").textContent = `${apiRoot()}/users`;
+      document.getElementById("sample-http-authority").textContent = authority();
+      document.getElementById("sample-http-audience").textContent = host();
+      document.getElementById("http-cloud-hint").textContent = cloud.value === "gcc"
+        ? "GCC High selected: use graph.microsoft.us for URI/Audience and login.microsoftonline.us for Authority."
+        : "Worldwide/commercial selected: use graph.microsoft.com for URI/Audience and login.microsoftonline.com for Authority.";
+      if (activeFlow) openFlow(activeFlow.n, lastTrigger);
+    });
     document.getElementById("sort").addEventListener("change", render);
     document.getElementById("close").addEventListener("click", closeModal);
     document.getElementById("backdrop").addEventListener("click", event => { if (event.target.id === "backdrop") closeModal(); });
@@ -499,7 +593,7 @@
         else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
       }
     });
-    document.getElementById("copy-endpoint").addEventListener("click", () => activeFlow && copy(`${host()}${activeFlow.endpoint}`));
+    document.getElementById("copy-endpoint").addEventListener("click", () => activeFlow && copy(`${apiRoot()}${activeFlow.endpoint}`));
     document.getElementById("copy-perms").addEventListener("click", () => activeFlow && copy(activeFlow.permissions.join("\n")));
     const contrastToggle = document.getElementById("contrast-toggle");
     const savedContrast = localStorage.getItem("cookbook-high-contrast") === "true";
@@ -524,6 +618,10 @@
     contrastToggle.addEventListener("click", () => setContrast(contrastToggle.getAttribute("aria-pressed") !== "true"));
     setContrast(savedContrast);
     setReaderScale(readerScale);
+    document.getElementById("sample-http-uri").textContent = `${apiRoot()}/users`;
+    document.getElementById("sample-http-authority").textContent = authority();
+    document.getElementById("sample-http-audience").textContent = host();
+    document.getElementById("http-cloud-hint").textContent = "Worldwide/commercial selected: use graph.microsoft.com for URI/Audience and login.microsoftonline.com for Authority.";
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) document.documentElement.setAttribute("data-motion", "reduce");
     renderFilters();
     render();

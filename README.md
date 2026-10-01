@@ -1,119 +1,155 @@
 # Entra Admin Flow Cookbook
 
-An interactive, practical catalog of 60 Microsoft Entra and Microsoft 365 admin reporting workflows that can be built with Power Automate and Microsoft Graph.
+An interactive catalog of 60 Microsoft Entra and Microsoft 365 admin reporting workflows for Power Automate and Microsoft Graph.
 
-**Start here:** [Open the interactive flow catalog](index.html). Search by task, category, endpoint, or permission; filter flows; choose a cloud; and open a recipe for its endpoint, permission checklist, and build steps. The public site is published at [mspfe2019.github.io/entra-admin-flow-cookbook](https://mspfe2019.github.io/entra-admin-flow-cookbook/).
+**Beginner?** Start with the [interactive catalog](index.html) and its **Beginner setup: app registration and HTTP** section at the top. Search or filter for a flow, open its details, copy its complete HTTP URI, then follow the same HTTP field instructions plus that recipe's own steps. The public site is [mspfe2019.github.io/entra-admin-flow-cookbook](https://mspfe2019.github.io/entra-admin-flow-cookbook/).
 
-### Accessibility
+These cookbook recipes are for reporting and review. They do not make changes to users, groups, apps, devices, or policies.
 
-The catalog is designed to be usable with vision and mobility access needs:
+## Beginner guide: build the HTTP request
 
-- Increase/decrease text size using the **A+ / A−** controls (or use browser zoom); preference is saved on the current device.
-- Enable the **High contrast** setting or use your operating system's forced-colors/high-contrast mode.
-- Navigate by keyboard, use the visible focus indicator, and jump over navigation with **Skip to main content**.
-- Search and category result updates are announced to assistive technology. Dialogs have a title, trap keyboard focus, close with **Escape**, and return focus to the opening control.
-- Reduced-motion preferences are respected; controls and touch targets are sized for easier selection.
-- Content uses semantic headings, landmarks, labels, and readable permission text.
+The HTTP setup is the same for all 60 recipes. Only the URI and required application permission change from recipe to recipe.
 
-Accessibility support is not a certification. Browser zoom, operating-system display settings, and screen readers may behave differently; report an issue if a workflow is difficult to use.
+### Before you start
 
-These recipes are reporting and review automations. They do not change directory objects. That is intentional: first validate the data and recipients, then design a separate, approval-gated write flow if you need to make changes.
+Have the following values from an app registration in the same tenant and cloud as the data:
 
-## Build a Graph-backed scheduled flow
+- **Directory (tenant) ID** — identifies your Entra tenant.
+- **Application (client) ID** — identifies the app registration.
+- **Graph Application permission** — open the recipe and add only the permission required by its endpoint under **API permissions → Add a permission → Microsoft Graph → Application permissions**. An administrator must grant admin consent.
+- **Credential** — use an approved secure connection/certificate where supported. If using a client secret, use its **Value**, not its ID, and store/retrieve it from an approved vault. Do not paste secrets into a URL, email, Compose output, screenshot, or source code.
 
-### 1. Select the cloud
+The permission chips in the catalog are guidance, not a live check. Always open that recipe's linked Microsoft API documentation and verify its **Application permissions** table before requesting consent.
 
-Use the Graph host and OAuth authority for the tenant where the app registration lives:
+### Create a scheduled flow
 
-| Cloud | Microsoft Graph base URL | OAuth authority |
-| --- | --- | --- |
-| Worldwide / commercial | `https://graph.microsoft.com` | `https://login.microsoftonline.com` |
-| GCC High | `https://graph.microsoft.us` | `https://login.microsoftonline.us` |
+1. In Power Automate, choose **Create → Scheduled cloud flow**.
+2. Name it (for example, `Guest inventory report`) and set a weekly schedule while testing.
+3. Choose **New step**, search for **HTTP**, and select the HTTP action approved in your environment. It is often a Premium action; check your license and connector availability.
+4. In the cookbook, open a recipe, select the correct cloud, and choose **Copy full endpoint**. Use that URL in the URI field below.
 
-This repository includes a GCC High option because the example app registration was shown in a GCC High tenant. National-cloud API and connector availability can differ; confirm the endpoint and Power Automate connector support for your tenant before deployment. Do not send a government-tenant token to the commercial Graph endpoint.
+### Fill in the HTTP action
 
-### 2. Configure the app registration
+| Field | What to enter |
+| --- | --- |
+| **Method** | `GET` — each cookbook example reads data. |
+| **URI** | Paste the complete URI copied from the recipe. It includes the correct Graph cloud hostname, `/v1.0/`, and the recipe's endpoint path and query. |
+| **Headers** | If available, add `Accept` with value `application/json`. |
+| **Queries** | Leave blank when the copied URI already contains query options after `?`. Do not add them a second time. |
+| **Body** | Leave empty for a GET request. |
+| **Authentication** | Choose **Active Directory OAuth** when using the standard HTTP action. Some approved connector versions may show **OAuth** or use a separate authenticated HTTP connector. |
+| **Authority** | The sign-in hostname for the same cloud as your tenant (see below). |
+| **Tenant** | Your Directory (tenant) ID. |
+| **Audience** | The Graph base URL only, such as `https://graph.microsoft.com`. Do **not** include `/v1.0` or an endpoint path. |
+| **Client ID** | Your Application (client) ID. |
+| **Credential type / Secret** | Select **Secret** and supply the securely stored secret **Value** only if the connector requires it. Some connectors support a certificate or managed connection instead. |
 
-1. In the matching tenant/cloud, create or select an app registration used only for this automation.
-2. Under **API permissions**, add only the Microsoft Graph **Application** permissions listed on the selected recipe. The `Already granted in the referenced screenshot` indicator in the catalog reflects that screenshot only; it is not a live check of your tenant.
-3. Have an authorized administrator grant tenant-wide admin consent. Application permissions run without a signed-in user and can access tenant-wide data within their grants.
-4. Create a certificate or client secret with an owner and rotation date. Prefer certificate authentication where the chosen connector supports it. Otherwise retrieve the secret from an approved secret store such as Azure Key Vault; do not put it in a Compose action, email, source control, or unprotected flow text.
-5. Keep the app read-only for these recipes. Avoid adding broad permissions such as `Directory.ReadWrite.All` just to make an endpoint work.
+If Authority or other fields aren't visible, look under **Show advanced options**. Do not add a manual bearer-token header when OAuth is configured to acquire the token.
 
-Microsoft can change endpoint requirements. Before granting consent, open the linked API documentation in the recipe and verify the **Application** permission column for that exact operation and cloud.
+| Tenant cloud | Full URI starts with | Authority | Audience |
+| --- | --- | --- | --- |
+| Worldwide / commercial | `https://graph.microsoft.com/v1.0/` | `https://login.microsoftonline.com` | `https://graph.microsoft.com` |
+| GCC High | `https://graph.microsoft.us/v1.0/` | `https://login.microsoftonline.us` | `https://graph.microsoft.us` |
 
-### 3. Create the flow
+For example, the `/users?$select=id,displayName` recipe path becomes:
 
-1. Create a **Scheduled cloud flow** with a **Recurrence** trigger (weekly is a reasonable starting point for inventory reports).
-2. Add the Power Automate **HTTP** action or an approved custom connector. Use `GET`, the cloud-specific Graph base URL plus the recipe endpoint, and the app's OAuth configuration. Depending on the action, use Active Directory OAuth with the tenant ID, authority, audience (the Graph base URL), client ID, and securely retrieved credential.
-3. Parse the JSON response and use its `value` array. Graph collection responses are paginated: process each page and set the next request URL to `@odata.nextLink` until it is absent. Use a **Do until** loop that performs the initial request before it tests for an empty next link. Do not append the whole `value` array to an array variable; append each current object (`item()`) while iterating.
-4. Select only the fields needed for the report. Use **Create HTML table** or build an HTML body, then send it with an approved Outlook or Teams connection. Treat all directory details as sensitive; restrict the recipient list and retention.
-5. Test with a small `$top` value where supported, confirm the response and pagination, then enable the recurrence. Add retry/backoff handling for HTTP `429` and transient `5xx` responses. Keep a flow-run owner and operational alerting.
+```text
+https://graph.microsoft.com/v1.0/users?$select=id,displayName
+```
 
-The Power Automate HTTP action is generally a premium capability; check your plan and the connector's availability in your Power Platform cloud. Built-in connectors used for notification have their own licensing, data-loss-prevention, and environment requirements.
+For GCC High, use `https://graph.microsoft.us/v1.0/users?$select=id,displayName`. Do not mix a government tenant with the commercial Graph or authority host. Other national clouds can have different hosts. Check [Microsoft Graph deployments](https://learn.microsoft.com/graph/deployments).
 
-### 4. Avoid duplicate alerts
+> **Connector screens differ.** This guide describes the standard HTTP action using Active Directory OAuth. If your action does not show these fields, pause and check that exact connector's Microsoft documentation or ask your Power Platform administrator. Do not guess where to put an app secret.
 
-For recurring change digests (audit logs, sign-ins, new accounts), store a watermark or processed event IDs in a governed SharePoint list, Dataverse table, or another approved store. Query a bounded time window with overlap, deduplicate by Graph object/event ID, and update the watermark only after notification succeeds. Do not assume an audit or sign-in feed has unlimited retention.
+### Test and troubleshoot
 
-### 5. Flow-specific setup
+1. Select **Save → Test** and run the flow manually if available.
+2. Open **Run history**, select the run, and expand the HTTP action. Status `200` means Graph accepted the request.
+3. **401 Unauthorized:** check the tenant ID, Authority, Audience, Client ID, credential, and cloud; all must match the app registration.
+4. **403 Forbidden:** check that the exact Graph Application permission is added and tenant admin consent was granted.
+5. **404 Not Found:** check the cloud host, `/v1.0` path, endpoint spelling, and any `{placeholder}` values in the recipe.
+6. **429 Too Many Requests:** Graph is throttling. Wait the `Retry-After` period and retry; do not rapidly loop the request.
+7. Treat run-history output as tenant data. Never paste real user, tenant, credential, or audit information into public tickets or repositories.
 
-Open a flow from [the interactive catalog](index.html). Each recipe includes:
+### Read the response and create a report
 
-- the Graph request path to combine with the selected cloud base URL;
-- Microsoft Graph **application** permissions to check;
-- ordered Power Automate setup steps and any API/licensing caveats.
+Most list endpoints return a JSON object with a `value` array. The HTTP **Body** is the enclosing object, not the array itself.
+
+1. Add **Parse JSON** after HTTP. For **Content**, choose the HTTP action's **Body**. Use **Generate from sample** with a small, sanitized Graph response to produce its schema.
+2. Add **Apply to each**. For its input, choose the `value` array from Parse JSON. If the dynamic-content picker only offers Body, use **Expression** and enter `body('HTTP')?['value']` (replace `HTTP` with your action's actual name).
+3. Inside the loop, `item()` means the current record. Append `item()` or its selected fields when building an array; do not append the whole `value` array inside the loop.
+4. Use **Select** to choose only the output columns, then **Create HTML table** or an approved Outlook/Teams action. Restrict recipients and report retention.
+5. A small number of requests return one object, not a `value` array (for example, the organization profile). In those cases, use the fields from Body directly and do not add an Apply to each.
+
+### Recipe-specific URLs and extra requests
+
+- Some recipe URIs contain tokens in braces, such as `{id}`, `{domainId}`, or `{UTC_START}`. These are instructions, not literal IDs: replace each with a real ID or a Power Automate expression before running.
+- For `{UTC_START}`, use a date/time in UTC and URL-encode it. Example Power Automate expression for the prior 24 hours: `encodeUriComponent(formatDateTime(addHours(utcNow(),-24),'yyyy-MM-ddTHH:mm:ssZ'))`.
+- When a recipe says to query something "for each" returned user, group, app, or service principal, add a **second HTTP action inside that record's Apply to each**. Insert the current record's ID in the second URI. Use the same Method and cloud-matched authentication values.
+- Follow each recipe's **Power Automate build steps**. They describe what to filter, summarize, join, or send after the HTTP request.
+
+### Pagination for larger results
+
+Graph may split a long list into pages. If the response contains `@odata.nextLink`, there are more results.
+
+1. Initialize a string variable `nextLink` to the first full URI copied from the recipe.
+2. Add a **Do until** loop that stops when `equals(variables('nextLink'), '')`.
+3. Inside the loop, run HTTP with `variables('nextLink')` as its URI. Process the current page's `body('HTTP')?['value']` array.
+4. After processing the page, set `nextLink` to:
+
+```text
+coalesce(body('HTTP')?['@odata.nextLink'], '')
+```
+
+The first HTTP request must run before the loop tests for an empty next link. Let Graph provide the next-page URL; don't construct or edit that URL yourself. Set a suitable Do until iteration limit and honor throttling.
+
+### Before enabling the schedule
+
+Test a report with a restricted recipient, confirm all pages and expected columns, and store a watermark/processed event IDs for recurring change or sign-in digests to prevent duplicate notifications. Minimize personal data, restrict flow co-owners and run-history access, and define an owner for flow failures and credential rotation. Verify endpoint permissions, national-cloud support, retention, data-loss-prevention requirements, and Premium licensing for HTTP.
+
+## Accessibility
+
+The interactive catalog includes adjustable text size, high contrast, keyboard navigation, visible focus indicators, skip-to-main-content, screen-reader announcements, focus-managed dialogs, and reduced-motion support. These features are not a formal accessibility certification.
 
 ## Permission guide
 
-Common permissions used by the catalog:
+Permissions below are examples and should be checked against each endpoint's current documentation. Prefer the least privileged Application permission that endpoint accepts; admin consent is generally required.
 
-| Permission | Typical use in this cookbook |
+| Permission | Typical use |
 | --- | --- |
 | `User.Read.All` | Read user profiles, guests, and selected user properties |
 | `LicenseAssignment.Read.All` | Read tenant subscription SKU information |
 | `Application.Read.All` | Read app registrations and service principals |
-| `Group.ReadBasic.All`, `Group.Read.All`, `GroupMember.Read.All` | Read basic or extended group details, members, and owners |
-| `AuditLog.Read.All` | Read directory audit and sign-in logs; logs also have retention and licensing considerations |
-| `IdentityRiskyUser.Read.All` | Read Identity Protection risky users; Identity Protection licensing applies |
-| `Policy.Read.All` | Read Conditional Access policy configuration |
-| `RoleManagement.Read.Directory` | Read directory role definitions and assignments |
+| `Group.ReadBasic.All`, `Group.Read.All`, `GroupMember.Read.All` | Read groups, members, and owners |
+| `AuditLog.Read.All` | Read directory audit and sign-in logs |
+| `IdentityRiskyUser.Read.All`, `IdentityRiskEvent.Read.All` | Read Identity Protection risky users/detections |
+| `Policy.Read.All` | Read Conditional Access and selected policy configuration |
+| `RoleManagement.Read.Directory`, `RoleEligibilitySchedule.Read.Directory` | Read directory role definitions, assignments, and PIM eligibility |
 | `Device.Read.All` | Read Entra device directory objects |
-| `DeviceManagementManagedDevices.Read.All` | Read Intune managed-device details; Intune entitlement applies |
+| `DeviceManagementManagedDevices.Read.All` | Read Intune managed-device details; Intune license applies |
 | `ServiceHealth.Read.All` | Read Microsoft 365 service health |
 | `Domain.Read.All` | Read verified domains and domain configuration |
 | `AdministrativeUnit.Read.All` | Read administrative units |
-| `IdentityRiskEvent.Read.All` | Read Identity Protection risk detections |
-| `RoleEligibilitySchedule.Read.Directory` | Read PIM role eligibility schedule instances |
 | `AccessReview.Read.All` | Read access review configuration |
-| `Policy.Read.All` | Read Conditional Access and selected tenant policy configuration |
 | `DelegatedPermissionGrant.Read.All` | Read delegated OAuth permission grants |
 
-These are starting points, not a substitute for the endpoint's current permission table. For example, the screenshot shows `Organization.Read.All`, but `LicenseAssignment.Read.All` is the narrower permission to check first for subscribed SKUs. A broader permission that happens to be present is not a reason to use it. Prefer the least privileged **Application** permission accepted by the exact endpoint and obtain admin consent only for the flow's needs.
+The screenshot referenced in the catalog showed `User.Read.All`, `Application.Read.All`, `Directory.Read.All`, and `Organization.Read.All` as granted Application permissions. That is not a live status check. For example, `LicenseAssignment.Read.All` is the narrower permission to check for the subscribed SKU endpoint instead of adding broader access.
 
 ## References
 
 - [Microsoft Graph permissions reference](https://learn.microsoft.com/graph/permissions-reference)
 - [Overview of Microsoft Graph permissions](https://learn.microsoft.com/graph/permissions-overview)
-- [Microsoft Graph deployments (national clouds)](https://learn.microsoft.com/graph/deployments)
+- [Microsoft Graph national-cloud deployments](https://learn.microsoft.com/graph/deployments)
+- [Power Automate US Government](https://learn.microsoft.com/power-automate/us-govt)
 - [List users API](https://learn.microsoft.com/graph/api/user-list?view=graph-rest-1.0)
 - [List applications API](https://learn.microsoft.com/graph/api/application-list?view=graph-rest-1.0)
+- [List groups API](https://learn.microsoft.com/graph/api/group-list?view=graph-rest-1.0)
 - [List directory audits API](https://learn.microsoft.com/graph/api/directoryaudit-list?view=graph-rest-1.0)
 - [List sign-ins API](https://learn.microsoft.com/graph/api/signin-list?view=graph-rest-1.0)
 - [List subscribed SKUs API](https://learn.microsoft.com/graph/api/subscribedsku-list?view=graph-rest-1.0)
-- [List risky users API](https://learn.microsoft.com/graph/api/riskyuser-list?view=graph-rest-1.0)
-- [List Conditional Access policies API](https://learn.microsoft.com/graph/api/conditionalaccessroot-list-policies?view=graph-rest-1.0)
-- [List user registration details API](https://learn.microsoft.com/graph/api/authenticationmethodsroot-list-userregistrationdetails?view=graph-rest-1.0)
-- [List managed devices API](https://learn.microsoft.com/graph/api/intune-devices-manageddevice-list?view=graph-rest-1.0)
-- [List service health overviews API](https://learn.microsoft.com/graph/api/serviceannouncement-list-healthoverviews?view=graph-rest-1.0)
 - [List domains API](https://learn.microsoft.com/graph/api/domain-list?view=graph-rest-1.0)
-- [List administrative units API](https://learn.microsoft.com/graph/api/directory-list-administrativeunits?view=graph-rest-1.0)
-- [List access review definitions API](https://learn.microsoft.com/graph/api/accessreviewset-list-definitions?view=graph-rest-1.0)
-- [List role eligibility schedule instances API](https://learn.microsoft.com/graph/api/rbacapplication-list-roleeligibilityscheduleinstances?view=graph-rest-1.0)
-- [List OAuth2 delegated permission grants API](https://learn.microsoft.com/graph/api/oauth2permissiongrant-list?view=graph-rest-1.0)
-- [List app role assignments API](https://learn.microsoft.com/graph/api/serviceprincipal-list-approleassignedto?view=graph-rest-1.0)
-- [Power Automate US Government service description](https://learn.microsoft.com/power-automate/us-govt)
+- [List service health overviews API](https://learn.microsoft.com/graph/api/serviceannouncement-list-healthoverviews?view=graph-rest-1.0)
 
 ## Disclaimer
 
-This community cookbook is educational, not a Microsoft-supported deployment package or security assessment. Verify Graph permissions, connector licensing, data residency, retention, and organizational policy before use. Do not publish tenant identifiers, user data, client secrets, access tokens, or flow exports containing credentials.
+This community cookbook is educational, not a Microsoft-supported deployment package or security assessment. Verify permissions, connector licensing, data residency, retention, and organizational policy before use. Never publish tenant identifiers, user data, client secrets, access tokens, or flow exports containing credentials.
