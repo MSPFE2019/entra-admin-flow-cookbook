@@ -71,22 +71,34 @@ For GCC High, use `https://graph.microsoft.us/v1.0/users?$select=id,displayName`
 6. **429 Too Many Requests:** Graph is throttling. Wait the `Retry-After` period and retry; do not rapidly loop the request.
 7. Treat run-history output as tenant data. Never paste real user, tenant, credential, or audit information into public tickets or repositories.
 
-### Read the response and create a report
+### Foundation used by every flow: Compose sample, then Parse JSON
 
-Most list endpoints return a JSON object with a `value` array. The HTTP **Body** is the enclosing object, not the array itself.
+Do this for each flow before adding the recipe-specific loops, filters, and report. A flow needs one successful HTTP response before Power Automate can generate a Parse JSON schema from real sample JSON.
 
-1. Add **Parse JSON** after HTTP. For **Content**, choose the HTTP action's **Body**. Use **Generate from sample** with a small, sanitized Graph response to produce its schema.
-2. Add **Apply to each**. For its input, choose the `value` array from Parse JSON. If the dynamic-content picker only offers Body, use **Expression** and enter `body('HTTP')?['value']` (replace `HTTP` with your action's actual name).
-3. Inside the loop, `item()` means the current record. Append `item()` or its selected fields when building an array; do not append the whole `value` array inside the loop.
-4. Use **Select** to choose only the output columns, then **Create HTML table** or an approved Outlook/Teams action. Restrict recipients and report retention.
-5. A small number of requests return one object, not a `value` array (for example, the organization profile). In those cases, use the fields from Body directly and do not add an Apply to each.
+1. Add and configure the recipe's **HTTP** action first. Add a **Compose** action immediately after HTTP.
+2. In **Compose → Inputs**, select the HTTP action's **Body** dynamic-content token. Alternatively, select **Expression** and enter `body('HTTP')`, replacing `HTTP` with your action's actual name.
+3. **Save** and run the flow once using **Test**. The first sample run needs HTTP and Compose only; Parse JSON does not need to be configured yet.
+4. Open that run in **Run history**, expand **Compose**, and copy its **Outputs** JSON. Treat the output as private tenant data. Don't paste a real response in a public issue, chat, or source file.
+5. Edit the flow and add **Parse JSON** after Compose. In **Content**, select the original HTTP action's **Body** token so the parser reads the response directly. Compose **Outputs** is also a valid content input if needed.
+6. In **Parse JSON → Schema**, select **Generate from sample**, paste the copied Compose Outputs JSON, then select **Done**. Power Automate builds a schema based on the sample. Save and run the flow again; verify Parse JSON succeeded.
+7. For a collection response, set **Apply to each** input to the Parse JSON `value` array, not the whole Body object. If the picker doesn't show it, use `body('Parse_JSON')?['value']` (replace `Parse_JSON` with your action's name).
+8. Inside Apply to each, `item()` means one current record. Append that item or selected properties; do not append the whole `value` array inside the loop. A single-object response (for example, organization profile) uses fields directly without Apply to each.
+9. After generating and testing the schema, remove the temporary Compose action to avoid keeping a second copy of response data in run history, or retain it only when needed for troubleshooting. If retained, protect run-history access.
+
+If the sample has no records, try a known populated test query or a smaller, safe endpoint first. The schema generator can only infer fields present in the sample. For properties that may be absent or null, verify the generated schema allows the actual values you expect and adjust it if required.
+
+### Use the parsed response in the report
+
+1. Use **Select** to map only the required output columns from the Apply to each records (or the value array).
+2. Use **Create HTML table** or an approved Outlook/Teams action. Restrict recipients and report retention.
+3. A small number of requests return one object, not a `value` array (for example, the organization profile); use those fields directly and do not add an Apply to each.
 
 ### Recipe-specific URLs and extra requests
 
 - Some recipe URIs contain tokens in braces, such as `{id}`, `{domainId}`, or `{UTC_START}`. These are instructions, not literal IDs: replace each with a real ID or a Power Automate expression before running.
 - For `{UTC_START}`, use a date/time in UTC and URL-encode it. Example Power Automate expression for the prior 24 hours: `encodeUriComponent(formatDateTime(addHours(utcNow(),-24),'yyyy-MM-ddTHH:mm:ssZ'))`.
 - When a recipe says to query something "for each" returned user, group, app, or service principal, add a **second HTTP action inside that record's Apply to each**. Insert the current record's ID in the second URI. Use the same Method and cloud-matched authentication values.
-- Follow each recipe's **Power Automate build steps**. They describe what to filter, summarize, join, or send after the HTTP request.
+- Every recipe includes the shared **HTTP → Compose sample → Parse JSON schema** foundation. After those steps, follow that recipe's **Power Automate build steps** to filter, summarize, join, or send its data.
 
 ### Pagination for larger results
 

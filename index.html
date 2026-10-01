@@ -297,25 +297,54 @@
         </div>
         <div class="guide-grid">
           <article class="guide-card">
-            <h3>4 · Run once and read the result</h3>
+            <h3>4 · Capture a sample body with Compose</h3>
             <ol>
-              <li>Select <strong>Save</strong>, then <strong>Test</strong> and run the flow manually if offered.</li>
+              <li>First add and configure only the HTTP action. Add a <strong>Compose</strong> action immediately after HTTP.</li>
+              <li>In Compose <strong>Inputs</strong>, select the HTTP action's <strong>Body</strong> dynamic-content token. Or choose <strong>Expression</strong> and enter <code>body('HTTP')</code>; replace <code>HTTP</code> with the actual name of your HTTP action.</li>
+              <li>Select <strong>Save</strong>, then <strong>Test</strong> and run the flow once. The Compose step records the real JSON body returned by Graph.</li>
+              <li>In the run history, expand Compose and copy its <strong>Outputs</strong> JSON. Treat it as private tenant data; use a sanitized sample if sharing it.</li>
+            </ol>
+          </article>
+          <article class="guide-card">
+            <h3>5 · Generate the Parse JSON schema</h3>
+            <ol>
+              <li>Return to edit mode and add <strong>Parse JSON</strong> after Compose.</li>
+              <li>For <strong>Content</strong>, select the HTTP <strong>Body</strong> token (or Compose <strong>Outputs</strong>). For a beginner, use the HTTP Body token so the parser reads the response directly.</li>
+              <li>Choose <strong>Generate from sample</strong>, paste the JSON you copied from Compose Outputs, then select <strong>Done</strong>. Power Automate creates the schema for Parse JSON.</li>
+              <li>Save and test again. Confirm both Compose and Parse JSON succeeded and that Parse JSON exposes the expected fields.</li>
+            </ol>
+            <p class="http-note"><strong>Order matters:</strong> run HTTP plus Compose once to get a real sample first. You cannot generate the Parse JSON schema until you have sample JSON. You do not need a working Parse JSON action for that first sample run.</p>
+          </article>
+          <article class="guide-card">
+            <h3>6 · Use the parsed result</h3>
+            <ol>
+              <li>For a collection response, set <strong>Apply to each</strong> to the Parse JSON <code>value</code> array, not the whole Body object.</li>
+              <li>For a single-object response (such as the organization profile), use its fields directly; do not add a loop.</li>
+              <li>After Parse JSON is working, you may remove the temporary Compose action. Keep it only if you need it for troubleshooting, and protect run history because it can contain user and tenant data.</li>
+              <li>Continue with the recipe-specific steps shown when you open each card.</li>
+            </ol>
+          </article>
+        </div>
+        <div class="guide-grid">
+          <article class="guide-card">
+            <h3>7 · Run once and read the result</h3>
+            <ol>
               <li>Open the run history and expand the HTTP action. A <code>200</code> status means the request succeeded. In the body, a collection normally has a <code>value</code> array.</li>
               <li>A <code>401</code> usually means sign-in, tenant, audience, or credential trouble. A <code>403</code> usually means the app permission or admin consent is missing. Read the error body; don't post it publicly if it contains tenant or user details.</li>
               <li>A <code>404</code> can mean a wrong URL/cloud or unavailable API; a <code>429</code> means slow down and retry after Graph's <code>Retry-After</code> interval.</li>
             </ol>
           </article>
           <article class="guide-card">
-            <h3>5 · Turn the response into a report</h3>
+            <h3>8 · Turn the response into a report</h3>
             <ol>
-              <li>For an endpoint that returns a collection, add <strong>Apply to each</strong> and select the HTTP response's <code>value</code> array—not the entire Body object.</li>
+              <li>For an endpoint that returns a collection, add <strong>Apply to each</strong> and select the Parse JSON <code>value</code> array—not the entire Body object.</li>
               <li>Inside the loop, use the current item (the expression <code>item()</code>) when appending one record. Do not append the whole array into an array variable.</li>
               <li>Use <strong>Select</strong> to choose only report columns, then <strong>Create HTML table</strong> or an approved notification action.</li>
               <li>Test with yourself or a restricted admin mailbox before adding recipients. Directory exports often contain sensitive employee or security data.</li>
             </ol>
           </article>
           <article class="guide-card">
-            <h3>6 · Add pagination before production</h3>
+            <h3>9 · Add pagination before production</h3>
             <ol>
               <li>Graph can split a long list across pages. When the response includes <code>@odata.nextLink</code>, the response is not complete yet.</li>
               <li>Beginner pattern: set a string variable called <code>nextLink</code> to the first full URL; use a <strong>Do until</strong> loop while it is not empty.</li>
@@ -364,6 +393,7 @@
       <section class="modal-section"><h3>HTTP action for this recipe</h3><p>In Power Automate, add an HTTP action, choose <strong>GET</strong>, and paste this complete URI. Use the shared beginner setup near the top of the page for every authentication field.</p><code id="modal-http-uri" class="endpoint"></code><p id="modal-http-placeholders"></p></section>
       <section class="modal-section"><h3>Application permissions to check</h3><div id="modal-perms" class="permission-list"></div></section>
       <section class="modal-section"><h3>Beginner HTTP setup steps</h3><ol id="modal-http-steps" class="steps"></ol></section>
+      <section class="modal-section"><h3>Foundation for every flow: Compose sample → Parse JSON</h3><ol id="modal-foundation-steps" class="steps"></ol></section>
       <section class="modal-section"><h3>Power Automate build steps</h3><ol id="modal-steps" class="steps"></ol></section>
       <section class="modal-section"><h3>Operational notes</h3><div id="modal-notes" class="callout"></div></section>
       <section class="modal-section"><h3>Microsoft references</h3><div id="modal-refs"></div></section>
@@ -537,6 +567,16 @@
         "Save and test the flow. Open Run history and inspect the HTTP action. Continue only when the status is 200; if you see an error, follow the beginner troubleshooting steps above."
       ];
       document.getElementById("modal-http-steps").innerHTML = httpSteps.map(step => `<li>${esc(step)}</li>`).join("");
+      const foundationSteps = [
+        "Before building the recipe's loops or report, add Compose immediately after HTTP. In Compose Inputs, choose the HTTP Body dynamic-content token, or use the Expression body('HTTP') and replace HTTP with your actual HTTP action name.",
+        "Save and test-run the flow once with HTTP and Compose. This first run gets the real JSON response from Graph; Parse JSON does not need to be configured yet.",
+        "In Run history, open Compose and copy its Outputs JSON. Keep this sample private because it may contain real tenant or user data.",
+        "Edit the flow and add Parse JSON after Compose. For Content, select the HTTP Body token so Parse JSON reads the response itself (Compose Outputs is also valid).",
+        "In Parse JSON, select Generate from sample, paste the copied Compose Outputs JSON, choose Done, and save. Power Automate generates the schema from that sample.",
+        "Test again and confirm Parse JSON succeeds. For collection responses, use its value array as Apply to each input; for a single object, use the fields directly without a loop.",
+        "After the schema is created, remove the temporary Compose to avoid retaining a second copy of sensitive response data, or keep it only when needed for diagnostics."
+      ];
+      document.getElementById("modal-foundation-steps").innerHTML = foundationSteps.map(step => `<li>${esc(step)}</li>`).join("");
       document.getElementById("modal-steps").innerHTML = activeFlow.steps.map(step => `<li>${esc(step)}</li>`).join("");
       document.getElementById("modal-notes").textContent = activeFlow.notes;
       document.getElementById("modal-refs").innerHTML = activeFlow.reference.map(key => `<a href="${esc(refs[key][1])}" target="_blank" rel="noopener noreferrer">${esc(refs[key][0])}</a>`).join(" · ") + ` · <a href="${esc(refs.permissions[1])}" target="_blank" rel="noopener noreferrer">Permission reference</a>`;
