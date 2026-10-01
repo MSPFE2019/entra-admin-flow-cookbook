@@ -1,0 +1,389 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Interactive cookbook of 30 Microsoft Entra admin reporting flows for Power Automate and Microsoft Graph.">
+  <title>Entra Admin Flow Cookbook</title>
+  <script>
+    (() => {
+      const param = new URLSearchParams(window.location.search).get("scoutTheme");
+      const theme =
+        param || (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+      document.documentElement.setAttribute("data-theme", theme);
+    })();
+  </script>
+  <style>
+    :root {
+      color-scheme: light;
+      --cp-bg: #f7f4ef;
+      --cp-bg-elevated: #fcfbf8;
+      --cp-surface: #ffffff;
+      --cp-surface-soft: #f5f5f5;
+      --cp-border: #dedede;
+      --cp-border-strong: #919191;
+      --cp-text: #242424;
+      --cp-text-muted: #5c5c5c;
+      --cp-text-soft: #6f6f6f;
+      --cp-accent: #b11f4b;
+      --cp-accent-hover: #9a1a41;
+      --cp-accent-soft: rgba(177, 31, 75, 0.08);
+      --cp-accent-fg: #ffffff;
+      --cp-success: #16a34a;
+      --cp-danger: #dc2626;
+      --cp-warning: #f59e0b;
+      --cp-link: #0078d4;
+      --cp-shadow: 0 18px 48px rgba(0, 0, 0, 0.12);
+      --cp-overlay: rgba(255, 255, 255, 0.8);
+      --cp-panel: rgba(255, 255, 255, 0.86);
+      --cp-panel-strong: rgba(255, 255, 255, 0.96);
+      --cp-sheen: rgba(255, 255, 255, 0.55);
+      --cp-highlight: rgba(177, 31, 75, 0.12);
+    }
+    html[data-theme="dark"] {
+      color-scheme: dark;
+      --cp-bg: #3d3b3a;
+      --cp-bg-elevated: #343231;
+      --cp-surface: #292929;
+      --cp-surface-soft: #2e2e2e;
+      --cp-border: #474747;
+      --cp-border-strong: #5f5f5f;
+      --cp-text: #dedede;
+      --cp-text-muted: #919191;
+      --cp-text-soft: #b0b0b0;
+      --cp-accent: #fd8ea1;
+      --cp-accent-hover: #fb7b91;
+      --cp-accent-soft: rgba(253, 142, 161, 0.14);
+      --cp-accent-fg: #1a1a1a;
+      --cp-success: #4ade80;
+      --cp-danger: #f87171;
+      --cp-warning: #fbbf24;
+      --cp-link: #4da6ff;
+      --cp-shadow: 0 18px 48px rgba(0, 0, 0, 0.32);
+      --cp-overlay: rgba(41, 41, 41, 0.88);
+      --cp-panel: rgba(41, 41, 41, 0.72);
+      --cp-panel-strong: rgba(41, 41, 41, 0.96);
+      --cp-sheen: rgba(255, 255, 255, 0.04);
+      --cp-highlight: rgba(253, 142, 161, 0.12);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--cp-bg);
+      color: var(--cp-text);
+      font-family: "Segoe UI", Aptos, Calibri, -apple-system, BlinkMacSystemFont, sans-serif;
+      line-height: 1.5;
+    }
+    a { color: var(--cp-link); }
+    button, input, select { font: inherit; }
+    button, select, input { color: var(--cp-text); }
+    .wrap { width: min(1180px, calc(100% - 36px)); margin: auto; }
+    .topbar { border-bottom: 1px solid var(--cp-border); background: var(--cp-bg-elevated); }
+    .topbar-inner { display:flex; align-items:center; justify-content:space-between; min-height:60px; gap:16px; }
+    .brand { font-weight:700; letter-spacing:.01em; }
+    .top-links { display:flex; gap:18px; font-size:.92rem; }
+    .top-links a { color:var(--cp-text-muted); text-decoration:none; }
+    .top-links a:hover { color:var(--cp-accent); }
+    header.hero { padding:42px 0 24px; }
+    .eyebrow { color:var(--cp-accent); text-transform:uppercase; letter-spacing:.12em; font-weight:700; font-size:.77rem; }
+    h1 { font-size:clamp(2rem,5vw,3.3rem); letter-spacing:-.04em; line-height:1.08; margin:10px 0 12px; }
+    .hero p { color:var(--cp-text-muted); font-size:1.08rem; max-width:780px; margin:0; }
+    .hero-row { display:flex; justify-content:space-between; align-items:end; gap:28px; }
+    .stats { display:flex; gap:10px; flex-wrap:wrap; }
+    .stat { background:var(--cp-surface); border:1px solid var(--cp-border); border-radius:.625rem; padding:9px 13px; min-width:112px; }
+    .stat strong { display:block; font-size:1.2rem; }
+    .stat span { color:var(--cp-text-muted); font-size:.8rem; }
+    .notice { margin:0 0 22px; padding:13px 16px; border:1px solid var(--cp-border); border-left:4px solid var(--cp-warning); border-radius:.625rem; background:var(--cp-surface); color:var(--cp-text-muted); }
+    .notice strong { color:var(--cp-text); }
+    .toolbar { position:sticky; top:0; z-index:3; padding:13px 0; background:var(--cp-overlay); border-top:1px solid var(--cp-border); border-bottom:1px solid var(--cp-border); backdrop-filter:blur(8px); }
+    .controls { display:grid; grid-template-columns:minmax(220px,1fr) auto auto; gap:10px; align-items:center; }
+    .search, select { height:42px; border:1px solid var(--cp-border-strong); border-radius:.625rem; padding:0 12px; background:var(--cp-surface); }
+    .search:focus, select:focus, button:focus-visible, a:focus-visible { outline:2px solid var(--cp-accent); outline-offset:2px; }
+    .filters { display:flex; gap:8px; flex-wrap:wrap; padding-top:11px; }
+    .filter { border:1px solid var(--cp-border); border-radius:999px; background:var(--cp-surface); padding:6px 12px; cursor:pointer; font-size:.86rem; }
+    .filter[aria-pressed="true"] { background:var(--cp-accent); color:var(--cp-accent-fg); border-color:var(--cp-accent); }
+    .countline { display:flex; justify-content:space-between; align-items:center; padding:18px 0 10px; color:var(--cp-text-muted); font-size:.91rem; }
+    .grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; padding-bottom:34px; }
+    .card { border:1px solid var(--cp-border); border-radius:16px; background:var(--cp-surface); padding:17px; display:flex; flex-direction:column; min-height:240px; box-shadow:0 0 2px var(--cp-border), 0 1px 2px var(--cp-border); }
+    .card-top { display:flex; justify-content:space-between; gap:10px; align-items:start; }
+    .number { color:var(--cp-accent); font-weight:700; font-size:.78rem; letter-spacing:.08em; }
+    .category { font-size:.75rem; border:1px solid var(--cp-border); padding:3px 8px; border-radius:999px; color:var(--cp-text-muted); white-space:nowrap; }
+    .card h2 { font-size:1.12rem; line-height:1.28; margin:10px 0 7px; }
+    .card p { color:var(--cp-text-muted); font-size:.91rem; margin:0 0 14px; }
+    .perms { display:flex; flex-wrap:wrap; gap:6px; margin-top:auto; }
+    .perm { font-family:Consolas,"Courier New",Courier,monospace; font-size:.72rem; border-radius:.625rem; padding:4px 7px; background:var(--cp-surface-soft); border:1px solid var(--cp-border); }
+    .perm.existing::after { content:" ✓"; color:var(--cp-success); font-family:inherit; }
+    .open { align-self:flex-start; margin-top:13px; border:0; background:transparent; color:var(--cp-accent); padding:0; font-weight:700; cursor:pointer; }
+    .empty { grid-column:1/-1; padding:35px; text-align:center; color:var(--cp-text-muted); border:1px dashed var(--cp-border-strong); border-radius:16px; }
+    .guide { border-top:1px solid var(--cp-border); padding:28px 0 38px; }
+    .guide h2 { font-size:1.55rem; margin:0 0 8px; }
+    .guide p, .guide li { color:var(--cp-text-muted); }
+    .guide-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-top:16px; }
+    .guide-card { background:var(--cp-surface); border:1px solid var(--cp-border); border-radius:16px; padding:16px; }
+    .guide-card h3 { font-size:1rem; margin:0 0 8px; }
+    code, pre { font-family:Consolas,"Courier New",Courier,monospace; }
+    .guide code { overflow-wrap:anywhere; }
+    footer { border-top:1px solid var(--cp-border); padding:20px 0 32px; color:var(--cp-text-muted); font-size:.88rem; }
+    .modal-backdrop { position:fixed; inset:0; z-index:5; display:none; align-items:flex-start; justify-content:center; overflow:auto; padding:5vh 16px; background:var(--cp-overlay); }
+    .modal-backdrop.open { display:flex; }
+    .modal { width:min(780px,100%); background:var(--cp-panel-strong); border:1px solid var(--cp-border-strong); border-radius:16px; padding:22px; }
+    .modal-header { display:flex; justify-content:space-between; gap:16px; align-items:start; }
+    .modal h2 { font-size:1.65rem; line-height:1.2; margin:4px 0 8px; }
+    .modal .summary { color:var(--cp-text-muted); margin:0 0 17px; }
+    .close { border:1px solid var(--cp-border); border-radius:.625rem; background:var(--cp-surface); cursor:pointer; padding:7px 10px; }
+    .modal-section { border-top:1px solid var(--cp-border); padding:15px 0; }
+    .modal-section h3 { font-size:1rem; margin:0 0 8px; }
+    .endpoint { display:block; padding:12px; border-radius:.625rem; background:var(--cp-surface-soft); overflow-wrap:anywhere; }
+    .permission-list { display:flex; gap:7px; flex-wrap:wrap; }
+    .steps { padding-left:22px; margin:6px 0 0; }
+    .steps li { margin:0 0 9px; }
+    .callout { background:var(--cp-accent-soft); border:1px solid var(--cp-highlight); border-radius:.625rem; padding:12px; color:var(--cp-text); }
+    .modal-actions { display:flex; gap:8px; flex-wrap:wrap; padding-top:12px; }
+    .action { border:1px solid var(--cp-border-strong); border-radius:.625rem; background:var(--cp-surface); padding:8px 12px; cursor:pointer; }
+    .action.primary { background:var(--cp-accent); color:var(--cp-accent-fg); border-color:var(--cp-accent); }
+    .toast { position:fixed; bottom:18px; left:50%; transform:translateX(-50%); background:var(--cp-text); color:var(--cp-bg); padding:9px 14px; border-radius:.625rem; display:none; z-index:8; }
+    .toast.show { display:block; }
+    @media (max-width:900px) { .grid { grid-template-columns:repeat(2,minmax(0,1fr)); } .hero-row { align-items:start; flex-direction:column; } }
+    @media (max-width:620px) { .wrap { width:min(100% - 24px,1180px); } .controls { grid-template-columns:1fr 1fr; } .search { grid-column:1/-1; } .grid,.guide-grid { grid-template-columns:1fr; } .top-links { gap:10px; font-size:.82rem; } .card { min-height:unset; } .modal { padding:16px; } }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="wrap topbar-inner">
+      <div class="brand">Entra Admin Flow Cookbook</div>
+      <nav class="top-links" aria-label="Main navigation">
+        <a href="#catalog">Catalog</a>
+        <a href="#setup">Setup</a>
+        <a href="README.md">Repository guide</a>
+        <a href="https://github.com/MSPFE2019/entra-admin-flow-cookbook">GitHub</a>
+      </nav>
+    </div>
+  </div>
+  <header class="wrap hero">
+    <div class="hero-row">
+      <div>
+        <div class="eyebrow">Power Automate · Microsoft Graph · Read-only first</div>
+        <h1>30 admin flows.<br>One practical catalog.</h1>
+        <p>Find a tenant-admin reporting idea, see the Graph request and application permissions, then follow the recipe to build it in Power Automate.</p>
+      </div>
+      <div class="stats" aria-label="Catalog summary">
+        <div class="stat"><strong>30</strong><span>flow recipes</span></div>
+        <div class="stat"><strong>13</strong><span>permission families</span></div>
+        <div class="stat"><strong>2</strong><span>cloud hosts</span></div>
+      </div>
+    </div>
+  </header>
+  <main>
+    <div class="wrap">
+      <div class="notice"><strong>Permission note:</strong> a check mark means the permission appeared as an application permission in the example registration screenshot. It is not a live tenant check. The catalog is read-only by design; do not grant every permission at once.</div>
+    </div>
+    <section id="catalog" aria-label="Flow catalog">
+      <div class="toolbar">
+        <div class="wrap">
+          <div class="controls">
+            <input id="search" class="search" type="search" placeholder="Search tasks, APIs, or permissions…" aria-label="Search flow recipes">
+            <select id="cloud" aria-label="Microsoft cloud">
+              <option value="global">Worldwide / commercial</option>
+              <option value="gcc">GCC High</option>
+            </select>
+            <select id="sort" aria-label="Sort flows">
+              <option value="number">Sort: catalog order</option>
+              <option value="title">Sort: title A–Z</option>
+            </select>
+          </div>
+          <div id="filters" class="filters" aria-label="Filter by category"></div>
+        </div>
+      </div>
+      <div class="wrap">
+        <div class="countline"><span id="result-count" aria-live="polite"></span><span>Open a card for build steps</span></div>
+        <div id="grid" class="grid"></div>
+      </div>
+    </section>
+    <section id="setup" class="guide">
+      <div class="wrap">
+        <div class="eyebrow">Shared foundation</div>
+        <h2>Set up the app and scheduled flow</h2>
+        <p>Use the exact least-privileged Graph <strong>Application</strong> permission for the recipe endpoint, with admin consent. The cloud choice above changes the displayed Graph host and OAuth authority.</p>
+        <div class="guide-grid">
+          <article class="guide-card">
+            <h3>1 · App registration</h3>
+            <ol>
+              <li>Register the app in the same Entra cloud as the target tenant.</li>
+              <li>Add only the permission(s) shown in the recipe and grant admin consent.</li>
+              <li>Use a certificate if supported; otherwise protect the secret in an approved secret store and define rotation ownership.</li>
+              <li>Do not put credentials in Compose, email, source files, or chat.</li>
+            </ol>
+          </article>
+          <article class="guide-card">
+            <h3>2 · Scheduled flow</h3>
+            <ol>
+              <li>Create a Scheduled cloud flow with a Recurrence trigger.</li>
+              <li>Add an HTTP GET action or approved custom connector; use the selected cloud's host and OAuth authority.</li>
+              <li>Parse the JSON response, iterate over <code>value</code>, and follow <code>@odata.nextLink</code> until no page remains.</li>
+              <li>Handle 429/5xx responses with retries and keep notifications scoped to approved recipients.</li>
+            </ol>
+          </article>
+          <article class="guide-card">
+            <h3>3 · Verify before enabling</h3>
+            <ol>
+              <li>Test with a short date window or small <code>$top</code> value when supported.</li>
+              <li>Check permission requirements on Microsoft's endpoint reference before consent.</li>
+              <li>For recurring digests, store a watermark or processed IDs to prevent duplicate messages.</li>
+              <li>Confirm premium connector licensing, government-cloud availability, DLP, and data retention.</li>
+            </ol>
+          </article>
+        </div>
+        <p>Many Power Automate HTTP patterns require premium licensing. GCC High uses <code>graph.microsoft.us</code> and <code>login.microsoftonline.us</code>; verify the exact availability and API support in your cloud.</p>
+        <p><a href="README.md">Read the complete setup and security notes in README</a> · <a href="https://learn.microsoft.com/graph/permissions-reference">Microsoft Graph permissions reference</a> · <a href="https://learn.microsoft.com/graph/deployments">Graph national cloud deployments</a></p>
+      </div>
+    </section>
+  </main>
+  <footer><div class="wrap">Community cookbook for planning and learning. Validate permissions, licensing, cloud availability, privacy, and organizational policy before deployment.</div></footer>
+  <div id="backdrop" class="modal-backdrop" role="presentation">
+    <article class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <div class="modal-header">
+        <div><div id="modal-meta" class="eyebrow"></div><h2 id="modal-title"></h2></div>
+        <button id="close" class="close" type="button" aria-label="Close details">Close</button>
+      </div>
+      <p id="modal-summary" class="summary"></p>
+      <section class="modal-section"><h3>Microsoft Graph request</h3><code id="modal-endpoint" class="endpoint"></code><p id="modal-permission-note"></p></section>
+      <section class="modal-section"><h3>Application permissions to check</h3><div id="modal-perms" class="permission-list"></div></section>
+      <section class="modal-section"><h3>Power Automate build steps</h3><ol id="modal-steps" class="steps"></ol></section>
+      <section class="modal-section"><h3>Operational notes</h3><div id="modal-notes" class="callout"></div></section>
+      <section class="modal-section"><h3>Microsoft references</h3><div id="modal-refs"></div></section>
+      <div class="modal-actions"><button id="copy-endpoint" class="action primary" type="button">Copy full endpoint</button><button id="copy-perms" class="action" type="button">Copy permissions</button></div>
+    </article>
+  </div>
+  <div id="toast" class="toast" role="status"></div>
+  <script>
+    const existingPerms = new Set(["User.Read.All", "Application.Read.All", "Directory.Read.All", "Organization.Read.All"]);
+    const refs = {
+      user: ["List users API", "https://learn.microsoft.com/graph/api/user-list?view=graph-rest-1.0"],
+      app: ["List applications API", "https://learn.microsoft.com/graph/api/application-list?view=graph-rest-1.0"],
+      audit: ["List directory audits API", "https://learn.microsoft.com/graph/api/directoryaudit-list?view=graph-rest-1.0"],
+      signin: ["List sign-ins API", "https://learn.microsoft.com/graph/api/signin-list?view=graph-rest-1.0"],
+      permissions: ["Graph permissions reference", "https://learn.microsoft.com/graph/permissions-reference"],
+      deployments: ["Graph national cloud deployments", "https://learn.microsoft.com/graph/deployments"],
+      groups: ["List groups API", "https://learn.microsoft.com/graph/api/group-list?view=graph-rest-1.0"],
+      device: ["List devices API", "https://learn.microsoft.com/graph/api/device-list?view=graph-rest-1.0"],
+      roles: ["List role assignments API", "https://learn.microsoft.com/graph/api/rbacapplication-list-roleassignments?view=graph-rest-1.0"],
+      risk: ["List risky users API", "https://learn.microsoft.com/graph/api/riskyuser-list?view=graph-rest-1.0"],
+      ca: ["List Conditional Access policies API", "https://learn.microsoft.com/graph/api/conditionalaccessroot-list-policies?view=graph-rest-1.0"],
+      auth: ["List user registration details API", "https://learn.microsoft.com/graph/api/authenticationmethodsroot-list-userregistrationdetails?view=graph-rest-1.0"],
+      intune: ["List managed devices API", "https://learn.microsoft.com/graph/api/intune-devices-manageddevice-list?view=graph-rest-1.0"],
+      health: ["List service health overviews API", "https://learn.microsoft.com/graph/api/serviceannouncement-list-healthoverviews?view=graph-rest-1.0"],
+      skus: ["List subscribed SKUs API", "https://learn.microsoft.com/graph/api/subscribedsku-list?view=graph-rest-1.0"]
+    };
+    const F = (n, category, title, summary, endpoint, permissions, steps, notes, reference) =>
+      ({n,category,title,summary,endpoint,permissions,steps,notes,reference});
+    const flows = [
+      F(1,"Users & guests","Guest account inventory","Send a weekly roster of B2B guests with invitation state and account status.","/users?$filter=userType%20eq%20%27Guest%27&$select=id,displayName,userPrincipalName,mail,createdDateTime,externalUserState,accountEnabled",["User.Read.All"],["Create a weekly Recurrence trigger.","GET this endpoint and follow every @odata.nextLink; process body.value.","Select guest name, mail (fall back to userPrincipalName), creation date, invitation state, and enabled status.","Create an HTML table and send it to a restricted admin mailbox."],"Treat guest identity and email data as sensitive; limit recipients and retention.",["user","permissions"]),
+      F(2,"Users & guests","Pending guest invitations","List guest accounts whose invitation is still awaiting acceptance.","/users?$filter=userType%20eq%20%27Guest%27%20and%20externalUserState%20eq%20%27PendingAcceptance%27&$select=id,displayName,userPrincipalName,mail,createdDateTime,externalUserState",["User.Read.All"],["Schedule weekly or monthly.","GET the filtered users endpoint; if the combined filter is rejected, fetch guests and filter externalUserState in the flow.","Include display name, contact address, invitation state, and invitation age.","Send the review list to the guest-access owner; do not automatically delete or resend invitations."],"Filtering support can vary with OData query capabilities; test the exact query and use client-side filtering as a fallback.",["user","permissions"]),
+      F(3,"Users & guests","Aged guest review","Surface guest accounts older than a chosen threshold, such as 180 days, for an owner review.","/users?$filter=userType%20eq%20%27Guest%27&$select=id,displayName,userPrincipalName,mail,createdDateTime,externalUserState,accountEnabled",["User.Read.All"],["Create a monthly Recurrence trigger.","List guest users and follow @odata.nextLink.","In Apply to each, compare createdDateTime with addDays(utcNow(),-180); include age, invitation state, and accountEnabled.","Send an access-review list to the designated owners for a human decision."],"This uses creation age as a review signal, not proof of inactivity or lack of business need.",["user","permissions"]),
+      F(4,"Users & guests","Disabled account report","Notify service desk owners when user accounts are disabled or recently disabled.","/users?$filter=accountEnabled%20eq%20false&$select=id,displayName,userPrincipalName,accountEnabled,department,createdDateTime",["User.Read.All"],["Run daily or weekly.","GET disabled users; if the filter is unsupported, list the selected fields and filter accountEnabled in Power Automate.","Add a change window by comparing with a stored prior snapshot or audit events.","Send a compact digest with department and UPN."],"The users endpoint reports current state; use directory audit logs if the requirement is to identify when or by whom an account was disabled.",["user","permissions"]),
+      F(5,"Users & guests","New user digest","Summarize accounts created in the last day or week for onboarding checks.","/users?$select=id,displayName,userPrincipalName,mail,createdDateTime,userType,department",["User.Read.All"],["Schedule daily or weekly and compute a UTC start time.","List the selected user properties; filter createdDateTime in the flow or use a tested Graph filter.","Include member/guest type and department in the digest.","Notify onboarding or identity operations; keep a watermark so retries do not resend rows."],"Directory reads can be eventually consistent, so newly created or updated accounts may appear with a delay.",["user","permissions"]),
+      F(6,"Users & guests","Profile completeness check","Find enabled member users missing department, job title, or office location.","/users?$filter=userType%20eq%20%27Member%27&$select=id,displayName,userPrincipalName,department,jobTitle,officeLocation,accountEnabled",["User.Read.All"],["Schedule weekly.","List member users and follow pagination.","In Apply to each, test selected fields for null or empty strings and produce a list of missing attributes.","Email each department's owner a limited report or send one consolidated admin digest."],"Define which fields are truly required with HR and privacy owners; avoid broadcasting employee profile data.",["user","permissions"]),
+      F(7,"Users & guests","Users without a manager","Report member accounts that do not have a manager relationship.","/users?$select=id,displayName,userPrincipalName,department",["User.Read.All"],["Schedule monthly.","List member users, then for each user call /users/{id}/manager (or use a supported manager expansion).","Treat a not-found manager response as no manager; handle other HTTP failures separately.","Group the results by department and notify the directory-data owner."],"This can require one request per user; respect Graph throttling and consider batching if your connector supports it.",["user","permissions"]),
+      F(8,"Users & guests","Missing usage location","Identify licensed users without usageLocation, which can block some license assignments.","/users?$select=id,displayName,userPrincipalName,usageLocation,assignedLicenses",["User.Read.All"],["Run weekly or before a license assignment campaign.","List the needed user properties and follow pagination.","Filter users whose assignedLicenses is non-empty and usageLocation is empty.","Send the list to the licensing administrator for validation and correction."],"This recipe only reports; assigning or changing locations requires an explicit write-flow design and stronger governance.",["user","permissions"]),
+      F(9,"Users & guests","Enabled users without licenses","Find enabled member users with no assigned license for account provisioning review.","/users?$filter=userType%20eq%20%27Member%27&$select=id,displayName,userPrincipalName,accountEnabled,assignedLicenses",["User.Read.All"],["Schedule weekly.","List users and their assignedLicenses property; follow pagination.","Filter accountEnabled equals true and assignedLicenses is an empty array.","Send the results to the provisioning owner; exclude service and break-glass accounts as approved."],"An empty assignedLicenses array does not by itself prove that an account is misconfigured; account type and workload need context.",["user","permissions"]),
+      F(10,"Licensing","License capacity alert","Alert when enabled license units are nearly consumed for selected subscribed SKUs.","/subscribedSkus?$select=skuId,skuPartNumber,capabilityStatus,consumedUnits,prepaidUnits",["LicenseAssignment.Read.All"],["Run daily or weekly and GET the subscribed SKUs endpoint.","For each SKU with enabled prepaid units above zero, calculate consumedUnits / prepaidUnits.enabled.","Compare to a configurable threshold such as 0.8; format as a percentage.","Send only the SKUs over threshold with consumed, enabled, and remaining units."],"LicenseAssignment.Read.All is the least-privileged application permission documented for this endpoint; the screenshot's Organization.Read.All is a broader alternative. Guard against zero enabled units and handle trial/suspended SKU states.",["skus","permissions"]),
+      F(11,"Users & guests","Inactive member review","Find member accounts with an old sign-in timestamp for an owner review.","/users?$filter=userType%20eq%20%27Member%27&$select=id,displayName,userPrincipalName,accountEnabled,signInActivity",["User.Read.All","AuditLog.Read.All"],["Schedule monthly and choose an inactivity threshold with policy owners.","List users with signInActivity; follow pagination and use lastSignInDateTime or another approved signal.","Exclude emergency, service, and non-interactive accounts using an approved exception list.","Send a review report; do not disable accounts automatically."],"signInActivity has API, licensing, permissions, and data-freshness prerequisites. Validate those for your tenant; a missing timestamp is not proof of inactivity.",["user","permissions"]),
+      F(12,"Sign-ins & risk","Failed sign-in digest","Summarize recent sign-in failures by user, application, and failure reason.","/auditLogs/signIns?$filter=createdDateTime%20ge%20{UTC_START}&$select=id,createdDateTime,userDisplayName,userPrincipalName,appDisplayName,ipAddress,status,clientAppUsed",["AuditLog.Read.All"],["Run daily and compute a bounded UTC window, such as the previous 24 hours.","GET sign-in logs; follow @odata.nextLink and filter nonzero status.errorCode values in the flow.","Group or count by user, app, and error code; minimize IP data in the email.","Send a security digest and persist processed IDs or a successful watermark."],"Sign-in logs have tenant licensing and retention constraints. Restrict IP and user details to authorized security recipients.",["signin","permissions"]),
+      F(13,"Sign-ins & risk","Legacy authentication review","Flag recent sign-ins using legacy client types for a security review.","/auditLogs/signIns?$filter=createdDateTime%20ge%20{UTC_START}&$select=id,createdDateTime,userPrincipalName,appDisplayName,clientAppUsed,status,ipAddress",["AuditLog.Read.All"],["Schedule daily and retrieve a short sign-in time window.","Follow Graph pagination and filter clientAppUsed values that your security team classifies as legacy.","Summarize users, client types, and outcomes; suppress duplicate events by ID.","Notify the security mailbox with a link to the sign-in investigation process."],"Validate clientAppUsed values and sign-in coverage in your tenant; a legacy-client event alone is not a complete risk assessment.",["signin","permissions"]),
+      F(14,"Sign-ins & risk","Risky users review queue","Send Identity Protection risky-user records to a security analyst for triage.","/identityProtection/riskyUsers?$select=id,userDisplayName,userPrincipalName,riskLevel,riskState,riskDetail,riskLastUpdatedDateTime",["IdentityRiskyUser.Read.All"],["Schedule daily if Identity Protection is licensed and enabled.","GET risky users and follow pagination.","Filter out resolved or dismissed states according to security policy; include risk level and last update.","Notify the analyst queue and record the review outcome outside the flow."],"Requires applicable Microsoft Entra ID Identity Protection licensing. Do not automatically dismiss risk or block accounts based on this report.",["risk","permissions"]),
+      F(15,"Applications","Expiring app credentials","Alert app owners when client secrets or certificates approach their end date.","/applications?$select=id,displayName,appId,passwordCredentials,keyCredentials",["Application.Read.All"],["Schedule weekly and list app registrations with passwordCredentials and keyCredentials.","For each credential, compare endDateTime to today and a configurable window (for example 30 days).","Resolve and notify owners; report app name, credential display name, and expiry date only.","Keep an escalation path for unowned apps and suppress already-notified credential IDs."],"Graph returns credential metadata, not reusable secret values. Protect app inventory data and verify property availability in your cloud.",["app","permissions"]),
+      F(16,"Applications","Applications without owners","Find app registrations with no accountable owner.","/applications?$select=id,displayName,appId,createdDateTime",["Application.Read.All"],["Schedule monthly and list applications with pagination.","For each application, query /applications/{id}/owners and determine whether any owners are returned.","Include app display name, application ID, creation date, and owner count.","Send the list to the application governance team to assign owners manually."],"This per-app pattern can make many calls; apply throttling, retry behavior, and a staged inventory for larger tenants.",["app","permissions"]),
+      F(17,"Applications","App registrations without credentials","Identify app registrations with no password or certificate credential configured for architecture review.","/applications?$select=id,displayName,appId,passwordCredentials,keyCredentials",["Application.Read.All"],["Run monthly.","List applications including passwordCredentials and keyCredentials.","Filter registrations where both credential collections are empty; use an approved exception list for federated or managed-identity designs.","Send a review list to app owners rather than creating a credential automatically."],"An app may authenticate through federation or another supported mechanism, so an empty credential list is a review prompt, not a defect.",["app","permissions"]),
+      F(18,"Applications","Conditional Access policy inventory","Report Conditional Access policies that are disabled or in report-only mode.","/identity/conditionalAccess/policies?$select=id,displayName,state,createdDateTime,modifiedDateTime",["Policy.Read.All"],["Schedule weekly or monthly.","GET Conditional Access policies and follow pagination.","Filter state values that need attention (disabled or enabledForReportingButNotEnforced).","Send policy names and states to identity security owners for review."],"Requires permissions and licensing appropriate to read Conditional Access configuration; policy changes are intentionally out of scope.",["ca","permissions"]),
+      F(19,"Operations","Microsoft 365 service health digest","Notify service owners about active service health issues in selected workloads.","/admin/serviceAnnouncement/healthOverviews?$select=id,service,serviceStatus",["ServiceHealth.Read.All"],["Schedule every 30–60 minutes or use an approved event source.","GET health overviews; follow pagination and identify affected services or non-healthy states.","Optionally query the matching service issue details and include the latest status and update time.","Send only changed incidents to the service desk and persist incident IDs/statuses."],"Graph service announcement coverage and permissions vary by tenant/cloud. Poll responsibly and verify the current endpoint documentation.",["health","permissions"]),
+      F(20,"Groups","Microsoft 365 and security group inventory","Build a periodic inventory of groups, type, visibility, and membership settings.","/groups?$select=id,displayName,description,groupTypes,mailEnabled,securityEnabled,visibility,createdDateTime",["Group.ReadBasic.All"],["Run monthly.","GET groups with selected fields and follow @odata.nextLink.","Normalize group type and visibility; exclude or separately report dynamic groups if desired.","Create an HTML report for group governance owners."],"Verify that Group.ReadBasic.All exposes every selected property in your tenant; request Group.Read.All only if the endpoint's permission table or required fields demand it. Do not rely on Directory.Read.All simply because it is already present.",["groups","permissions"]),
+      F(21,"Groups","Groups without owners","Find groups whose owner list is empty so a responsible owner can be assigned.","/groups?$select=id,displayName,mail,groupTypes",["GroupMember.Read.All"],["Schedule monthly and list groups.","For each group, query /groups/{id}/owners?$select=id,displayName,userPrincipalName.","Record groups with no returned owners, following pagination where needed.","Send the report to group governance; do not appoint an owner automatically."],"Can require one owners request per group. Confirm the endpoint permission table and account for service principals or non-user owners.",["groups","permissions"]),
+      F(22,"Groups","Empty group review","Report groups with no direct members for cleanup or ownership review.","/groups?$select=id,displayName,groupTypes",["GroupMember.Read.All"],["Schedule monthly and retrieve group IDs and names.","For each group, list /groups/{id}/members?$select=id and inspect the returned collection.","Flag groups with zero direct members; separately decide how to handle nested or dynamic membership.","Send a review list to the group owner or governance team."],"This reports direct membership and can be expensive at scale; skip excluded system groups and apply Graph throttling.",["groups","permissions"]),
+      F(23,"Groups","Dynamic group rule review","Inventory dynamic membership rules and identify rules that are disabled or not processing.","/groups?$filter=groupTypes/any(c:c%20eq%20%27DynamicMembership%27)&$select=id,displayName,membershipRule,membershipRuleProcessingState",["Group.Read.All"],["Run monthly.","GET dynamic membership groups with the rule and processing state.","Flag paused processing, empty rules, or rules matching internal review criteria.","Send rule text only to authorized group owners."],"Membership rules can expose organizational logic. Validate advanced-query support and protect the report.",["groups","permissions"]),
+      F(24,"Groups","Groups containing guest members","Review group membership that includes B2B guests.","/groups?$select=id,displayName,groupTypes",["GroupMember.Read.All","User.Read.All"],["Schedule monthly and retrieve the approved group set.","For each group, list members with user properties (for example /groups/{id}/members/microsoft.graph.user?$select=id,displayName,userPrincipalName,userType).","Filter userType equals Guest and record group, guest, and UPN.","Send the guest-to-group mapping to the access review owner."],"Membership can be large or nested; this lists direct membership, not transitive access. Use least privilege and limit report distribution.",["groups","user","permissions"]),
+      F(25,"Groups","Group membership change digest","Summarize recent group membership additions and removals from directory audit events.","/auditLogs/directoryAudits?$filter=activityDateTime%20ge%20{UTC_START}&$select=id,activityDateTime,activityDisplayName,category,initiatedBy,targetResources,result",["AuditLog.Read.All"],["Schedule daily and set a bounded UTC time window.","GET directory audits; filter group membership activity names/categories in the flow.","Extract actor, target group/user, result, and timestamp; deduplicate by audit event ID.","Send an admin digest and store a watermark only after successful delivery."],"Audit activity names can vary; validate event shapes in your tenant and consider audit retention limits.",["audit","permissions"]),
+      F(26,"Roles & audit","Directory role assignment inventory","Create a regular inventory of directory role assignments and principals.","/roleManagement/directory/roleAssignments?$expand=principal,roleDefinition",["RoleManagement.Read.Directory"],["Schedule weekly or monthly.","GET role assignments and follow pagination.","Join roleDefinition display names with principal IDs/types and highlight privileged roles.","Send the inventory to identity governance for owner review."],"Role-management data is sensitive. Keep recipients narrow and confirm any role eligibility/PIM reporting needs separately.",["roles","permissions"]),
+      F(27,"Roles & audit","Privileged role change alerts","Alert security when directory role assignments are added or removed.","/auditLogs/directoryAudits?$filter=activityDateTime%20ge%20{UTC_START}&$select=id,activityDateTime,activityDisplayName,initiatedBy,targetResources,result",["AuditLog.Read.All"],["Schedule every 15–60 minutes within the tenant's audit visibility and retention constraints.","Get directory audit events; filter role-management activity names and successful results.","Extract the affected role/principal and initiator; deduplicate by event ID.","Send high-priority notification to the security response channel."],"For near-real-time guarantees, evaluate an event-driven source; scheduled polling introduces delay. Do not perform automatic remediation in this alert flow.",["audit","permissions"]),
+      F(28,"Users & guests","MFA registration coverage","Send an aggregate report of users' registered authentication methods and MFA readiness.","/reports/authenticationMethods/userRegistrationDetails?$select=id,userDisplayName,userPrincipalName,isMfaRegistered,isMfaCapable,methodsRegistered",["AuditLog.Read.All"],["Schedule weekly or monthly.","GET user registration details and follow the report endpoint's pagination.","Aggregate counts by isMfaRegistered/isMfaCapable and produce a restricted exception list if approved.","Send the summary to identity security owners; avoid publishing individual method details broadly."],"Confirm the endpoint's current least-privileged permission and any report-specific licensing/retention requirements before consent.",["auth","permissions"]),
+      F(29,"Devices","Entra device inventory and stale-device review","Identify registered devices that have not signed in recently for human review.","/devices?$select=id,displayName,operatingSystem,trustType,accountEnabled,approximateLastSignInDateTime",["Device.Read.All"],["Schedule monthly.","List devices and follow @odata.nextLink.","Compare approximateLastSignInDateTime with an approved age threshold; flag missing timestamps separately.","Send the list to device owners for review, without deleting or disabling devices."],"The sign-in timestamp is approximate and may be absent. Validate exceptions and device ownership before any cleanup.",["device","permissions"]),
+      F(30,"Devices","Intune noncompliant device report","Notify endpoint administrators about managed devices that are not compliant.","/deviceManagement/managedDevices?$filter=complianceState%20ne%20%27compliant%27&$select=id,deviceName,userPrincipalName,operatingSystem,complianceState,lastSyncDateTime",["DeviceManagementManagedDevices.Read.All"],["Schedule daily or weekly based on operations needs.","GET managed devices and follow Graph pagination.","Filter noncompliant or unknown compliance states and group by owner/platform.","Send a restricted remediation queue to endpoint administrators."],"Requires Intune/Endpoint Manager licensing and supported Graph access in the cloud. Device and user identifiers are sensitive; do not send broad email.",["intune","permissions"])
+    ];
+    const categories = ["All", ...new Set(flows.map(f => f.category))];
+    const grid = document.getElementById("grid");
+    const search = document.getElementById("search");
+    const categoryFilters = document.getElementById("filters");
+    const cloud = document.getElementById("cloud");
+    let activeCategory = "All";
+    let activeFlow = null;
+    const esc = value => String(value).replace(/[&<>"']/g, char => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[char]));
+    const host = () => cloud.value === "gcc" ? "https://graph.microsoft.us" : "https://graph.microsoft.com";
+    const authority = () => cloud.value === "gcc" ? "https://login.microsoftonline.us" : "https://login.microsoftonline.com";
+    const searchable = f => `${f.n} ${f.category} ${f.title} ${f.summary} ${f.endpoint} ${f.permissions.join(" ")} ${f.steps.join(" ")}`.toLowerCase();
+    function renderFilters() {
+      categoryFilters.innerHTML = categories.map(c => `<button class="filter" type="button" aria-pressed="${c === activeCategory}" data-category="${esc(c)}">${esc(c)}</button>`).join("");
+      categoryFilters.querySelectorAll("button").forEach(button => button.addEventListener("click", () => {
+        activeCategory = button.dataset.category;
+        renderFilters(); render();
+      }));
+    }
+    function render() {
+      const query = search.value.trim().toLowerCase();
+      let visible = flows.filter(f => (activeCategory === "All" || f.category === activeCategory) && (!query || searchable(f).includes(query)));
+      if (document.getElementById("sort").value === "title") visible.sort((a,b) => a.title.localeCompare(b.title));
+      document.getElementById("result-count").textContent = `${visible.length} of ${flows.length} flows`;
+      grid.innerHTML = visible.length ? visible.map(f => `
+        <article class="card">
+          <div class="card-top"><span class="number">FLOW ${String(f.n).padStart(2,"0")}</span><span class="category">${esc(f.category)}</span></div>
+          <h2>${esc(f.title)}</h2><p>${esc(f.summary)}</p>
+          <div class="perms">${f.permissions.map(p => `<span class="perm ${existingPerms.has(p) ? "existing" : ""}" title="${existingPerms.has(p) ? "Shown in the example app-registration screenshot" : "Not shown as granted in the screenshot"}">${esc(p)}</span>`).join("")}</div>
+          <button class="open" type="button" data-open="${f.n}">View setup →</button>
+        </article>`).join("") : `<div class="empty">No recipes match. Try a different search or category.</div>`;
+      grid.querySelectorAll("[data-open]").forEach(button => button.addEventListener("click", () => openFlow(Number(button.dataset.open))));
+    }
+    function openFlow(n) {
+      activeFlow = flows.find(f => f.n === n);
+      if (!activeFlow) return;
+      document.getElementById("modal-meta").textContent = `FLOW ${String(activeFlow.n).padStart(2,"0")} · ${activeFlow.category}`;
+      document.getElementById("modal-title").textContent = activeFlow.title;
+      document.getElementById("modal-summary").textContent = activeFlow.summary;
+      document.getElementById("modal-endpoint").textContent = `${host()}${activeFlow.endpoint}`;
+      const windowHint = activeFlow.endpoint.includes("{UTC_START}")
+        ? " Replace {UTC_START} with a URL-encoded UTC time, for example encodeUriComponent(formatDateTime(addHours(utcNow(),-24),'yyyy-MM-ddTHH:mm:ssZ'))."
+        : "";
+      document.getElementById("modal-permission-note").textContent = `OAuth authority for the selected cloud: ${authority()}. Use the Graph base URL above as the token audience.${windowHint}`;
+      document.getElementById("modal-perms").innerHTML = activeFlow.permissions.map(p => `<span class="perm ${existingPerms.has(p) ? "existing" : ""}">${esc(p)}${existingPerms.has(p) ? " · shown in screenshot" : " · add/verify"}</span>`).join("");
+      document.getElementById("modal-steps").innerHTML = activeFlow.steps.map(step => `<li>${esc(step)}</li>`).join("");
+      document.getElementById("modal-notes").textContent = activeFlow.notes;
+      document.getElementById("modal-refs").innerHTML = activeFlow.reference.map(key => `<a href="${esc(refs[key][1])}" target="_blank" rel="noopener noreferrer">${esc(refs[key][0])}</a>`).join(" · ") + ` · <a href="${esc(refs.permissions[1])}" target="_blank" rel="noopener noreferrer">Permission reference</a>`;
+      document.getElementById("backdrop").classList.add("open");
+      document.getElementById("close").focus();
+      document.body.style.overflow = "hidden";
+    }
+    function closeModal() {
+      document.getElementById("backdrop").classList.remove("open");
+      document.body.style.overflow = "";
+      activeFlow = null;
+    }
+    function toast(message) {
+      const element = document.getElementById("toast");
+      element.textContent = message;
+      element.classList.add("show");
+      setTimeout(() => element.classList.remove("show"), 1800);
+    }
+    async function copy(text) {
+      try { await navigator.clipboard.writeText(text); toast("Copied to clipboard"); }
+      catch { toast("Clipboard unavailable in this browser"); }
+    }
+    search.addEventListener("input", render);
+    cloud.addEventListener("change", () => { render(); if (activeFlow) openFlow(activeFlow.n); });
+    document.getElementById("sort").addEventListener("change", render);
+    document.getElementById("close").addEventListener("click", closeModal);
+    document.getElementById("backdrop").addEventListener("click", event => { if (event.target.id === "backdrop") closeModal(); });
+    document.addEventListener("keydown", event => { if (event.key === "Escape") closeModal(); });
+    document.getElementById("copy-endpoint").addEventListener("click", () => activeFlow && copy(`${host()}${activeFlow.endpoint}`));
+    document.getElementById("copy-perms").addEventListener("click", () => activeFlow && copy(activeFlow.permissions.join("\n")));
+    renderFilters();
+    render();
+  </script>
+</body>
+</html>
